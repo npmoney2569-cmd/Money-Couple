@@ -1,0 +1,44 @@
+Money Couple Project
+————————————————————
+Password
+vkiR8ky5YEMl7Eml
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+.env.local
+
+# Connect to Postgres via the shared transaction-mode pooler (IPv4-only)
+DATABASE_URL="postgresql://postgres.lhiaxaobnqgrjccdhzyj:vkiR8ky5YEMl7Eml@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Connect to Postgres via the shared session-mode pooler (used for migrations)
+DIRECT_URL="postgresql://postgres.lhiaxaobnqgrjccdhzyj:vkiR8ky5YEMl7Eml@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+anon
+public
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoaWF4YW9ibnFncmpjY2RoenlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTU0NjEsImV4cCI6MjA5ODg5MTQ2MX0.LGwDmshyoBqZ4aeESrpifbKH790y-Txr1wfzBB81Uts
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+service_role
+secret
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoaWF4YW9ibnFncmpjY2RoenlqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzMxNTQ2MSwiZXhwIjoyMDk4ODkxNDYxfQ.0BNxPnMuE1R7HX5WNgC7eERzAH2Hc3O6YchtTSiD6i4
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+Next.js (.env.local)
+NEXT_PUBLIC_SUPABASE_URL="https://lhiaxaobnqgrjccdhzyj.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="<PUT_ANON_KEY_HERE>"
+SUPABASE_SERVICE_ROLE_KEY="<PUT_SERVICE_ROLE_KEY_HERE>"
+DATABASE_URL="postgresql://postgres.lhiaxaobnqgrjccdhzyj:vkiR8ky5YEMl7Eml@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.lhiaxaobnqgrjccdhzyj:vkiR8ky5YEMl7Eml@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
+NEXT_PUBLIC_APP_URL="http://localhost:3008"
+PORT=3008

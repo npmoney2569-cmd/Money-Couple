@@ -1,0 +1,31 @@
+:root {
+  --background: #fafaf5;
+  --foreground: #10221b;
+  --card: #ffffff;
+  --muted: #4a5d53;
+  --accent: #2f7a57;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at 15% 20%, #e8f3de, transparent 40%),
+    radial-gradient(circle at 85% 0%, #d6f0ea, transparent 30%),
+    var(--background);
+  color: var(--foreground);
+  font-family: "Noto Sans Thai", "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  min-height: 100vh;
+}
