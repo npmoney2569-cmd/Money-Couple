@@ -4,7 +4,7 @@
 
 ## สถานะโปรเจกต์
 
-🟡 **Planning** — เอกสาร spec พร้อมแล้ว กำลังเตรียมเริ่มพัฒนา MVP
+� **In Development** — ระบบพื้นฐานพร้อมแล้ว มี auth และ dashboard เชื่อมข้อมูลจริงจาก Supabase
 
 ## เอกสาร
 
@@ -31,9 +31,11 @@
 
 ## ขั้นตอนถัดไป
 
-1. Scaffold โปรเจกต์ Next.js ตาม [10-tech-stack](./docs/10-tech-stack.md)
-2. สร้าง Supabase migrations ตาม [08-database-schema](./docs/08-database-schema.md)
-3. เริ่ม Sprint 1 ตาม [09-mvp-roadmap](./docs/09-mvp-roadmap.md)
+1. ทดสอบระบบ auth และ dashboard บน `http://localhost:3008`
+2. เชื่อมโมดูล dashboard ให้ใช้ table Supabase จริงทั้งหมด
+3. ปรับ UI / branding ให้เป็น Money Couple
+4. ตั้ง remote GitHub แล้ว push โค้ด
+5. เตรียม deploy และ environment production
 
 ## Quick Setup (Supabase + Port 3008)
 
