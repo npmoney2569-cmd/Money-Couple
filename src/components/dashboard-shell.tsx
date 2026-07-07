@@ -12,47 +12,47 @@ type DashboardShellProps = {
 
 type MenuGroup = {
   title: string;
-  items: { label: string; href: string }[];
+  items: { label: string; href: string; icon: string }[];
 };
 
 const menuGroups: MenuGroup[] = [
   {
     title: "ภาพรวม",
-    items: [{ label: "Dashboard", href: "/dashboard" }],
+    items: [{ label: "Dashboard", href: "/dashboard", icon: "📊" }],
   },
   {
     title: "รายการ",
     items: [
-      { label: "รายรับ", href: "/dashboard/income" },
-      { label: "รายจ่าย", href: "/dashboard/expense" },
-      { label: "Split Transaction", href: "/dashboard/splits" },
-      { label: "โอนเงิน", href: "/dashboard/transfer" },
-      { label: "บัญชี", href: "/dashboard/accounts" },
-      { label: "หมวดหมู่", href: "/dashboard/categories" },
-      { label: "แท็ก", href: "/dashboard/tags" },
-      { label: "งบประมาณ", href: "/dashboard/budgets" },
-      { label: "เป้าหมายการออม", href: "/dashboard/goals" },
-      { label: "หนี้สิน", href: "/dashboard/debts" },
-      { label: "สินทรัพย์", href: "/dashboard/assets" },
-      { label: "บิล / Subscription", href: "/dashboard/subscriptions" },
+      { label: "รายรับ", href: "/dashboard/income", icon: "⬇" },
+      { label: "รายจ่าย", href: "/dashboard/expense", icon: "⬆" },
+      { label: "Split Transaction", href: "/dashboard/splits", icon: "⫮" },
+      { label: "โอนเงิน", href: "/dashboard/transfer", icon: "↔" },
+      { label: "บัญชี", href: "/dashboard/accounts", icon: "💳" },
+      { label: "หมวดหมู่", href: "/dashboard/categories", icon: "◫" },
+      { label: "แท็ก", href: "/dashboard/tags", icon: "🏷" },
+      { label: "งบประมาณ", href: "/dashboard/budgets", icon: "◔" },
+      { label: "เป้าหมายการออม", href: "/dashboard/goals", icon: "◎" },
+      { label: "หนี้สิน", href: "/dashboard/debts", icon: "⚠" },
+      { label: "สินทรัพย์", href: "/dashboard/assets", icon: "🧾" },
+      { label: "บิล / Subscription", href: "/dashboard/subscriptions", icon: "🗓" },
     ],
   },
   {
     title: "วิเคราะห์",
     items: [
-      { label: "รายงาน", href: "/dashboard/reports" },
-      { label: "ปฏิทิน", href: "/dashboard/calendar" },
-      { label: "ค้นหา / กรอง", href: "/dashboard/search" },
+      { label: "รายงาน", href: "/dashboard/reports", icon: "📈" },
+      { label: "ปฏิทิน", href: "/dashboard/calendar", icon: "📅" },
+      { label: "ค้นหา / กรอง", href: "/dashboard/search", icon: "⌕" },
     ],
   },
   {
     title: "อื่นๆ",
     items: [
-      { label: "แจ้งเตือน", href: "/dashboard/alerts" },
-      { label: "LINE Bot", href: "/dashboard/line" },
-      { label: "ตั้งค่า", href: "/dashboard/settings" },
-      { label: "ผู้ใช้งาน", href: "/dashboard/users" },
-      { label: "ความปลอดภัย", href: "/dashboard/security" },
+      { label: "แจ้งเตือน", href: "/dashboard/alerts", icon: "🔔" },
+      { label: "LINE Bot", href: "/dashboard/line", icon: "💬" },
+      { label: "ตั้งค่า", href: "/dashboard/settings", icon: "⚙" },
+      { label: "ผู้ใช้งาน", href: "/dashboard/users", icon: "👥" },
+      { label: "ความปลอดภัย", href: "/dashboard/security", icon: "🛡" },
     ],
   },
 ];
@@ -85,7 +85,10 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
                   href={item.href}
                   className={`${styles.item} ${isActive(item.href) ? styles.active : ""}`.trim()}
                 >
-                  {item.label}
+                  <span className={styles.itemIcon} aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
                 </Link>
               ))}
             </nav>

@@ -127,6 +127,21 @@
 
 สำหรับ OAuth Provider ให้เปิดใช้งานใน Supabase Authentication > Providers
 
+### Google OAuth Quick Setup (ทำครั้งเดียว)
+
+1. ไปที่ Google Cloud Console > APIs & Services > Credentials
+2. สร้าง OAuth Client ID (Application type: Web application)
+3. ใส่ Authorized redirect URIs:
+	- `https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback`
+4. คัดลอก Client ID และ Client Secret
+5. ไปที่ Supabase Dashboard > Authentication > Providers > Google แล้วเปิดใช้งาน
+6. วาง Client ID / Client Secret แล้ว Save
+7. ไปที่ Supabase Dashboard > Authentication > URL Configuration แล้วเพิ่ม Redirect URLs:
+	- `http://localhost:3008/auth/callback`
+	- `https://cmn-money-couple.vercel.app/auth/callback`
+
+หลังตั้งค่าเสร็จ ปุ่ม `เข้าสู่ระบบด้วย Google` ในหน้า login จะทำงานได้ทันที
+
 ## หมายเหตุ
 
 - เอกสารต้นฉบับอยู่ที่ `ระบบบัญชีรายรับรายจ่าย_บุคคล_v2(1).md`

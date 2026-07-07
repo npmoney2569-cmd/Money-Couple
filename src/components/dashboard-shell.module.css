@@ -41,9 +41,10 @@
 }
 
 .groupTitle {
-  font-size: 12px;
-  color: #8fa4d2;
-  margin: 14px 10px 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #c5d8ff;
+  margin: 16px 10px 10px;
 }
 
 .menu {
@@ -54,10 +55,22 @@
 .item {
   color: #d2e0ff;
   font-size: 14px;
+  font-weight: 500;
   border-radius: 10px;
   padding: 9px 10px;
   border: 1px solid transparent;
   transition: 120ms ease;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.itemIcon {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
 }
 
 .item:hover {
@@ -132,9 +145,10 @@
   font-size: 12px;
   color: #d7e5ff;
   border-radius: 8px;
-  padding: 8px;
+  padding: 8px 4px;
   text-align: center;
   background: rgba(43, 77, 152, 0.26);
+  line-height: 1.15;
 }
 
 @media (max-width: 1120px) {
@@ -148,5 +162,46 @@
 
   .mobileNav {
     display: grid;
+  }
+}
+
+@media (min-width: 1121px) {
+  .groupTitle {
+    letter-spacing: 0.2px;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+
+  .topRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .chip {
+    max-width: 58vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 14px 12px 96px;
+  }
+
+  .mobileNav {
+    left: 6px;
+    right: 6px;
+    bottom: 8px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .mobileItem {
+    font-size: 11px;
   }
 }

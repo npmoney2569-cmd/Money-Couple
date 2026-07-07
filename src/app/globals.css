@@ -29,3 +29,28 @@ a {
 main {
   min-height: 100vh;
 }
+
+/* Themed scrollbar for a cleaner visual match across pages */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 197, 255, 0.6) rgba(13, 28, 64, 0.18);
+}
+
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+*::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(15, 30, 66, 0.16), rgba(15, 30, 66, 0.1));
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid rgba(9, 20, 45, 0.28);
+  background: linear-gradient(180deg, rgba(146, 183, 255, 0.7), rgba(108, 151, 247, 0.62));
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(173, 204, 255, 0.82), rgba(126, 167, 255, 0.76));
+}

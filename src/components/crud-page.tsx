@@ -448,41 +448,43 @@ export default function CrudPage({
         </div>
       </form>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.key}>{col.label}</th>
-            ))}
-            <th>การกระทำ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 ? (
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan={columns.length + 1} className={styles.status}>
-                ยังไม่มีข้อมูล
-              </td>
+              {columns.map((col) => (
+                <th key={col.key}>{col.label}</th>
+              ))}
+              <th>การกระทำ</th>
             </tr>
-          ) : (
-            rows.map((row) => (
-              <tr key={String(row.id)}>
-                {columns.map((col) => (
-                  <td key={`${String(row.id)}-${col.key}`}>{col.render ? col.render(row[col.key]) : renderCellValue(row, col.key, row[col.key])}</td>
-                ))}
-                <td>
-                  <button type="button" className={styles.editButton} onClick={() => handleEdit(row)}>
-                    แก้ไข
-                  </button>
-                  <button type="button" className={styles.deleteButton} onClick={() => handleDelete(row.id)}>
-                    ลบ
-                  </button>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className={styles.status}>
+                  ยังไม่มีข้อมูล
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              rows.map((row) => (
+                <tr key={String(row.id)}>
+                  {columns.map((col) => (
+                    <td key={`${String(row.id)}-${col.key}`}>{col.render ? col.render(row[col.key]) : renderCellValue(row, col.key, row[col.key])}</td>
+                  ))}
+                  <td className={styles.rowActions}>
+                    <button type="button" className={styles.editButton} onClick={() => handleEdit(row)}>
+                      แก้ไข
+                    </button>
+                    <button type="button" className={styles.deleteButton} onClick={() => handleDelete(row.id)}>
+                      ลบ
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

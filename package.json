@@ -10,6 +10,7 @@
     "admin:create": "node scripts/create-admin-user.mjs",
     "seed:categories": "node scripts/seed-preset-categories.mjs",
     "db:apply": "node scripts/apply-schema-and-triggers.mjs",
+    "db:username-auth": "node scripts/apply-sql.mjs scripts/username-auth.sql",
     "db:grants": "node scripts/apply-grants.mjs",
     "db:rls-fix": "node scripts/apply-rls-fix.mjs",
     "db:backfill-users": "node scripts/apply-backfill-users.mjs"

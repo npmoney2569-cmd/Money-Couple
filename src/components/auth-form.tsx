@@ -14,8 +14,11 @@ type AuthFormProps = {
 export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const supabase = createClient();
+  const ENABLE_GOOGLE_OAUTH = false;
   const [identifier, setIdentifier] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -57,12 +60,34 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setMessage(null);
 
     const normalizedInput = identifier.trim().toLowerCase();
-    const email =
-      isLogin && normalizedInput === "admin"
-        ? "admin@cmn.local"
-        : normalizedInput;
 
     if (isLogin) {
+      let email = normalizedInput;
+
+      if (!normalizedInput.includes("@")) {
+        if (normalizedInput === "admin") {
+          email = "admin@cmn.local";
+        } else {
+          const { data: resolvedEmail, error: resolveError } = await supabase.rpc("resolve_login_email", {
+            login_input: normalizedInput,
+          });
+
+          if (resolveError) {
+            setMessage("ยังไม่รองรับการล็อกอินด้วย Username กรุณาใช้อีเมล หรือให้แอดมินรันสคริปต์ username-auth");
+            setLoading(false);
+            return;
+          }
+
+          if (!resolvedEmail || typeof resolvedEmail !== "string") {
+            setMessage("ไม่พบ Username นี้ กรุณาตรวจสอบอีกครั้ง");
+            setLoading(false);
+            return;
+          }
+
+          email = resolvedEmail.toLowerCase();
+        }
+      }
+
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setMessage(error.message);
@@ -75,7 +100,31 @@ export default function AuthForm({ mode }: AuthFormProps) {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const normalizedUsername = username.trim().toLowerCase();
+    const usernameRegex = /^[a-z0-9_]{3,30}$/;
+
+    if (!usernameRegex.test(normalizedUsername)) {
+      setMessage("Username ต้องยาว 3-30 ตัว และใช้ได้เฉพาะ a-z, 0-9, _");
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: normalizedInput,
+      password,
+      options: {
+        data: {
+          username: normalizedUsername,
+          full_name: normalizedUsername,
+        },
+      },
+    });
     if (error) {
       setMessage(error.message);
       setLoading(false);
@@ -105,6 +154,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
         />
       </label>
 
+      {!isLogin ? (
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>Username</span>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            placeholder="เช่น nutnaker_01"
+            style={{
+              border: "1px solid #c6d9cc",
+              borderRadius: 10,
+              padding: "10px 12px",
+              fontSize: 16,
+            }}
+          />
+        </label>
+      ) : null}
+
       <label style={{ display: "grid", gap: 6 }}>
         <span>Password</span>
         <input
@@ -121,6 +189,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
           }}
         />
       </label>
+
+      {!isLogin ? (
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>ยืนยัน Password</span>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            style={{
+              border: "1px solid #c6d9cc",
+              borderRadius: 10,
+              padding: "10px 12px",
+              fontSize: 16,
+            }}
+          />
+        </label>
+      ) : null}
 
       <button
         type="submit"
@@ -140,22 +227,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
       {isLogin ? (
         <>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => onOAuthSignIn("google")}
-            style={{
-              background: "#ffffff",
-              color: "#10221b",
-              border: "1px solid #c6d9cc",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontSize: 15,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-          >
-            เข้าสู่ระบบด้วย Google
-          </button>
+          {ENABLE_GOOGLE_OAUTH ? (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => onOAuthSignIn("google")}
+              style={{
+                background: "#ffffff",
+                color: "#10221b",
+                border: "1px solid #c6d9cc",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: 15,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              เข้าสู่ระบบด้วย Google
+            </button>
+          ) : null}
           <button
             type="button"
             disabled={loading}
