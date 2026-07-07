@@ -3,6 +3,10 @@
   display: grid;
   place-items: center;
   padding: 56px 20px;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(54, 103, 255, 0.22), transparent 24%),
+    radial-gradient(circle at 92% 0%, rgba(0, 201, 255, 0.16), transparent 22%),
+    linear-gradient(180deg, #040a1d 0%, #06142d 50%, #081a3b 100%);
 }
 
 .card {
