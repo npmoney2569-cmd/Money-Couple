@@ -90,7 +90,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setMessage(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("email not confirmed")) {
+          setMessage("กรุณายืนยันอีเมลของคุณก่อนเข้าสู่ระบบ (ตรวจสอบในอีเมล)");
+        } else if (msg.includes("invalid login credentials")) {
+          setMessage("อีเมล/Username หรือรหัสผ่านไม่ถูกต้อง");
+        } else {
+          setMessage(error.message);
+        }
         setLoading(false);
         return;
       }
@@ -126,13 +133,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
       },
     });
     if (error) {
-      setMessage(error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("rate limit") || msg.includes("too many")) {
+        setMessage("สมัครบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่");
+      } else if (msg.includes("already registered") || msg.includes("already exists")) {
+        setMessage("อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบแทน");
+      } else if (msg.includes("invalid email") || msg.includes("is invalid")) {
+        setMessage("รูปแบบอีเมลไม่ถูกต้อง");
+      } else if (msg.includes("password") && msg.includes("short")) {
+        setMessage("รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร");
+      } else {
+        setMessage(error.message);
+      }
       setLoading(false);
       return;
     }
 
-    setMessage("สมัครสมาชิกสำเร็จ กรุณาตรวจอีเมลเพื่อยืนยันบัญชี");
     setLoading(false);
+    router.push("/login?registered=1");
+    router.refresh();
   }
 
   return (

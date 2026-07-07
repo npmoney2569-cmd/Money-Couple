@@ -50,6 +50,17 @@
   color: #d6ebff;
 }
 
+.successBanner {
+  margin: 10px 0 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(46, 227, 168, 0.15);
+  border: 1px solid rgba(46, 227, 168, 0.4);
+  color: #2ee3a8;
+  font-size: 0.93rem;
+  line-height: 1.5;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 28px 14px;
