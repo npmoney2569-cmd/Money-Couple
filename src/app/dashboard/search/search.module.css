@@ -1,0 +1,116 @@
+.page {
+  display: grid;
+  gap: 18px;
+}
+
+.card {
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.96), rgba(9, 24, 58, 0.98));
+  border: 1px solid rgba(139, 170, 255, 0.2);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.searchForm {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+}
+
+.filterRow {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  align-items: end;
+}
+
+.filterRow label {
+  display: grid;
+  gap: 6px;
+  color: #c5d7ff;
+  font-size: 0.88rem;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 170, 255, 0.24);
+  background: rgba(9, 18, 40, 0.9);
+  color: #f5f8ff;
+}
+
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 170, 255, 0.24);
+  background: rgba(9, 18, 40, 0.9);
+  color: #f5f8ff;
+}
+
+.button {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #2ee3a8;
+  color: #06213c;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.buttonSecondary {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 170, 255, 0.35);
+  background: rgba(79, 140, 255, 0.18);
+  color: #eaf1ff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.buttonSecondary:disabled,
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  color: #b4c9f6;
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(139, 170, 255, 0.16);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  color: #b4c9f6;
+}
+
+.table td {
+  color: #eef3ff;
+}
+
+@media (max-width: 720px) {
+  .searchForm {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    grid-template-columns: 1fr;
+  }
+}

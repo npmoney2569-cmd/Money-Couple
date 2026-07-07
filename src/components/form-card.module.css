@@ -1,0 +1,147 @@
+.card {
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.96), rgba(9, 24, 58, 0.98));
+  border: 1px solid rgba(139, 170, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.subtitle {
+  color: #a9c2ff;
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  font-size: 0.95rem;
+  color: #d9e4ff;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 170, 255, 0.24);
+  background: rgba(9, 18, 40, 0.9);
+  color: #f5f8ff;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f5f8ff;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button,
+.deleteButton,
+.editButton,
+.cancelButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.button {
+  background: #2ee3a8;
+  color: #06213c;
+}
+
+.editButton {
+  background: #4f8cff;
+  color: white;
+}
+
+.cancelButton {
+  background: #9ca3af;
+  color: white;
+}
+
+.deleteButton {
+  background: #ff6580;
+  color: white;
+}
+
+.status {
+  color: #b4c9f6;
+  font-size: 0.95rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(139, 170, 255, 0.12);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  color: #c1d4ff;
+}
+
+.table td {
+  color: #eef3ff;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 170, 255, 0.35);
+  background: rgba(79, 140, 255, 0.18);
+  color: #eaf1ff;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 720px) {
+  .form,
+  .actions {
+    gap: 12px;
+  }
+}

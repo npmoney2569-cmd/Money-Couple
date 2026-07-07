@@ -7,13 +7,19 @@
     "build": "next build",
     "start": "next start -p 3008",
     "lint": "next lint",
-    "admin:create": "node scripts/create-admin-user.mjs"
+    "admin:create": "node scripts/create-admin-user.mjs",
+    "seed:categories": "node scripts/seed-preset-categories.mjs",
+    "db:apply": "node scripts/apply-schema-and-triggers.mjs",
+    "db:grants": "node scripts/apply-grants.mjs",
+    "db:rls-fix": "node scripts/apply-rls-fix.mjs",
+    "db:backfill-users": "node scripts/apply-backfill-users.mjs"
   },
   "dependencies": {
-    "dotenv": "^16.6.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.54.0",
+    "dotenv": "^16.6.1",
     "next": "^15.4.1",
+    "pg": "^8.22.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

@@ -1,5 +1,14 @@
 # MVP Roadmap
 
+> สถานะล่าสุดของโค้ดจริงดูที่ [11-current-status](./11-current-status.md)
+
+## สรุปสถานะปัจจุบัน
+
+- โปรเจกต์อยู่ช่วง **MVP Core / In Development**
+- Foundation และ Core Finance ทำไปแล้วบางส่วน
+- Extended modules บางหน้าเริ่มทำเป็น CRUD พื้นฐานแล้ว เช่น goals, debts, assets, subscriptions
+- ยังไม่พร้อม production เพราะต้องตรวจ build/lint, แก้ encoding ภาษาไทย และทดสอบ Supabase flow จริง
+
 ## หลักการแบ่ง Phase
 
 - **MVP (Phase 1):** ใช้งานได้จริงสำหรับบุคคลเดี่ยว — บันทึกรายรับ-รายจ่าย ดู Dashboard ตั้งงบประมาณ
@@ -13,35 +22,41 @@
 
 ### Sprint 1: Foundation (สัปดาห์ 1–2)
 
-- [ ] Scaffold Next.js + TypeScript + Tailwind + shadcn/ui
-- [ ] ตั้งค่า Supabase project + migrations ตาราง MVP
-- [ ] Auth: Email + Password, Google Login
-- [ ] Layout responsive (Sidebar PC / Bottom Nav mobile)
-- [ ] หน้า Settings พื้นฐาน (โปรไฟล์, ภาษา, สกุลเงิน, theme)
+- [x] Scaffold Next.js + TypeScript
+- [x] ตั้งค่า Supabase client/server/middleware
+- [x] Auth: Email + Password
+- [~] Google/LINE OAuth button และ callback route ต้องทดสอบ provider จริง
+- [x] Layout responsive เบื้องต้น (Sidebar PC / Bottom Nav mobile)
+- [~] หน้า Settings พื้นฐาน (โปรไฟล์, ภาษา, สกุลเงิน, theme)
 
 ### Sprint 2: Core Finance (สัปดาห์ 2–3)
 
-- [ ] CRUD บัญชี (เงินสด, ธนาคาร, บัตรเครดิต, e-Wallet)
-- [ ] CRUD หมวดหมู่ (preset + custom + subcategory)
-- [ ] CRUD รายรับ / รายจ่าย (พร้อมแท็ก, โน้ต, ไฟล์แนบ)
-- [ ] โอนเงินระหว่างบัญชี
-- [ ] Split Transaction (แยกหมวดหมู่ในรายการเดียว)
-- [ ] ค้นหา/กรองรายการ
+- [x] CRUD บัญชี (เงินสด, ธนาคาร, บัตรเครดิต, e-Wallet, investment)
+- [~] CRUD หมวดหมู่ (preset + custom พื้นฐาน; subcategory ยังไม่ครบ UI)
+- [~] CRUD รายรับ / รายจ่าย (จำนวนเงิน, วันที่, หมวดหมู่, บัญชี, โน้ต, แท็ก; ทดสอบ create จริงแล้ว, ยังไม่มีไฟล์แนบ)
+- [x] CRUD แท็ก (ตาราง `tags` + ผูกกับ `transaction_tags`)
+- [~] โอนเงินระหว่างบัญชี (มี UI และ trigger; ทดสอบ create จริงแล้ว, ควรทดสอบ update/delete เพิ่ม)
+- [x] Split Transaction UI (หน้า `dashboard/splits` พร้อมคำนวณยอดคงเหลือแบบ real-time)
+- [x] Split validation ที่ DB (trigger กัน split เกินจำนวนธุรกรรมและกัน transfer split)
+- [x] ค้นหา/กรองรายการ (keyword/type/date/category/account/amount/tag)
 
 ### Sprint 3: Dashboard & Budget (สัปดาห์ 3–4)
 
-- [ ] Dashboard — ยอดคงเหลือ, รายรับ/จ่าย, กราฟ, รายการล่าสุด
-- [ ] งบประมาณรายเดือน (ตั้งค่า + progress bar)
-- [ ] รายงานพื้นฐาน — สรุปรายเดือน, แยกตามหมวดหมู่
-- [ ] Export CSV
+- [~] Dashboard — ยอดคงเหลือ, รายรับ/จ่าย, กราฟ, รายการล่าสุด
+- [~] งบประมาณ (ตั้งค่า + progress bar พื้นฐาน)
+- [~] รายงานพื้นฐาน — สรุปรายเดือน, แยกตามหมวดหมู่
+- [x] Export CSV รายเดือน/ช่วงเวลา
 
 ### Sprint 4: Polish & Deploy (สัปดาห์ 4–6)
 
-- [ ] หน้าผู้ใช้งาน (โปรไฟล์, เปลี่ยนรหัสผ่าน)
-- [ ] Seed หมวดหมู่ preset (รายรับ + รายจ่าย)
-- [ ] Error handling + loading states
-- [ ] Deploy Vercel + Supabase production
-- [ ] ทดสอบบน mobile browser
+- [~] หน้าผู้ใช้งาน/ตั้งค่า/เปลี่ยนรหัสผ่าน
+- [~] Seed หมวดหมู่ preset (ต้องตรวจ encoding ภาษาไทย)
+- [~] Error handling + loading states
+- [~] Deploy Vercel + Supabase production (เตรียมคู่มือ deploy + checklist แล้ว)
+- [~] ทดสอบบน mobile browser (ผ่าน smoke test หน้า login/register/dashboard/search/reports/splits ที่ 390px และทดสอบ CRUD รายรับ/รายจ่าย/โอนเงิน/split สำเร็จ)
+- [x] ตรวจ `npm run build`
+- [x] ตรวจ `npm run lint`
+- [x] แก้ schema mismatch ของ `auth_providers` (เพิ่ม table + RLS ใน `scripts/schema.sql`)
 
 ### MVP — สิ่งที่ **ไม่** ทำ
 

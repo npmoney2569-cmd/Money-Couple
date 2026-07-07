@@ -25,9 +25,11 @@ const menuGroups: MenuGroup[] = [
     items: [
       { label: "รายรับ", href: "/dashboard/income" },
       { label: "รายจ่าย", href: "/dashboard/expense" },
+      { label: "Split Transaction", href: "/dashboard/splits" },
       { label: "โอนเงิน", href: "/dashboard/transfer" },
       { label: "บัญชี", href: "/dashboard/accounts" },
       { label: "หมวดหมู่", href: "/dashboard/categories" },
+      { label: "แท็ก", href: "/dashboard/tags" },
       { label: "งบประมาณ", href: "/dashboard/budgets" },
       { label: "เป้าหมายการออม", href: "/dashboard/goals" },
       { label: "หนี้สิน", href: "/dashboard/debts" },

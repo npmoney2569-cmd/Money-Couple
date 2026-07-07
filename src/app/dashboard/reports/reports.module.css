@@ -1,0 +1,311 @@
+.page {
+  display: grid;
+  gap: 18px;
+}
+
+.card {
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.96), rgba(9, 24, 58, 0.98));
+  border: 1px solid rgba(139, 170, 255, 0.2);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: #a9c2ff;
+}
+
+.actionsGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.exportButton,
+.exportButtonSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.exportButton {
+  background: #2ee3a8;
+  color: #06213c;
+}
+
+.exportButtonSecondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef3ff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.rangeForm {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.dateInput {
+  min-width: 135px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+  background: rgba(9, 18, 40, 0.95);
+  color: #eef3ff;
+}
+
+.hiddenLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.statTitle {
+  margin: 0 0 8px;
+  color: #a9c2ff;
+}
+
+.statValue {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #eef3ff;
+  font-weight: 700;
+}
+
+.charts {
+  display: grid;
+  gap: 18px;
+}
+
+.trendPanel,
+.categoryPanel,
+.accountPanel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(139, 170, 255, 0.15);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.trendHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.trendHeader h2,
+.categoryPanel h2,
+.accountPanel h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.trendHeader p {
+  margin: 0;
+  color: #b4c9f6;
+}
+
+.trendGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+  gap: 6px;
+  align-items: end;
+  min-height: 160px;
+}
+
+.trendItem {
+  display: grid;
+  gap: 8px;
+  align-items: end;
+}
+
+.trendBarWrapper {
+  position: relative;
+  height: 120px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.trendBarBackground {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.trendBar {
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+.trendLabel {
+  font-size: 0.75rem;
+  color: #c1d4ff;
+  text-align: center;
+}
+
+.barList {
+  display: grid;
+  gap: 14px;
+}
+
+.barRow {
+  display: grid;
+  gap: 10px;
+}
+
+.barLabel {
+  margin: 0;
+  color: #eef3ff;
+  font-weight: 600;
+}
+
+.barMeta {
+  margin: 4px 0 0;
+  color: #a9c2ff;
+  font-size: 0.9rem;
+}
+
+.barTrack {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2ee3a8, #10b981);
+}
+
+.accountList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.accountRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.empty {
+  color: #b4c9f6;
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(139, 170, 255, 0.16);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  color: #b4c9f6;
+}
+
+.table td {
+  color: #eef3ff;
+}
+
+@media (max-width: 860px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rangeForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(139, 170, 255, 0.16);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  color: #b4c9f6;
+}
+
+.table td {
+  color: #eef3ff;
+}
+
+@media (max-width: 860px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
