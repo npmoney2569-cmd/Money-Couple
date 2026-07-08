@@ -81,10 +81,11 @@ export async function getDashboardData() {
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
   const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const sixMonthsAgoStart = sixMonthsAgo.toISOString().slice(0, 10);
 
   const [
-    currentTxRes,
-    prevTxRes,
+    txRes,
     latestTxRes,
     accountsRes,
     categoriesRes,
@@ -98,14 +99,8 @@ export async function getDashboardData() {
     supabase
       .from("transactions")
       .select("id,type,amount,date,merchant,payee,note,category_id,account_id,created_at")
-      .gte("date", monthStart)
+      .gte("date", sixMonthsAgoStart)
       .lte("date", monthEnd)
-      .is("deleted_at", null),
-    supabase
-      .from("transactions")
-      .select("id,type,amount,date")
-      .gte("date", prevMonthStart)
-      .lte("date", prevMonthEnd)
       .is("deleted_at", null),
     supabase
       .from("transactions")
@@ -137,8 +132,7 @@ export async function getDashboardData() {
     if (error) warnings.push(`${name}: ${error.message}`);
   };
 
-  collect("transactions(current)", currentTxRes.error);
-  collect("transactions(previous)", prevTxRes.error);
+  collect("transactions(6months)", txRes.error);
   collect("transactions(latest)", latestTxRes.error);
   collect("accounts", accountsRes.error);
   collect("categories", categoriesRes.error);
@@ -149,8 +143,9 @@ export async function getDashboardData() {
   collect("bills_subscriptions", billsRes.error);
   collect("notifications", notificationsRes.error);
 
-  const currentTx = (currentTxRes.data ?? []) as TxRow[];
-  const prevTx = (prevTxRes.data ?? []) as TxRow[];
+  const allTx = (txRes.data ?? []) as TxRow[];
+  const currentTx = allTx.filter((t) => t.date >= monthStart && t.date <= monthEnd);
+  const prevTx = allTx.filter((t) => t.date >= prevMonthStart && t.date <= prevMonthEnd);
   const latestTx = (latestTxRes.data ?? []) as TxRow[];
   const accounts = (accountsRes.data ?? []) as AccountRow[];
   const categories = (categoriesRes.data ?? []) as CategoryRow[];
@@ -201,6 +196,31 @@ export async function getDashboardData() {
     };
   });
 
+  const trendData = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthKey = d.toISOString().slice(0, 7); // "YYYY-MM"
+    const monthName = d.toLocaleDateString("th-TH", { month: "short" });
+    trendData.push({
+      key: monthKey,
+      name: monthName,
+      income: 0,
+      expense: 0,
+    });
+  }
+
+  for (const tx of allTx) {
+    const txMonth = tx.date.slice(0, 7); // "YYYY-MM"
+    const monthData = trendData.find((t) => t.key === txMonth);
+    if (monthData) {
+      if (tx.type === "income") {
+        monthData.income += num(tx.amount);
+      } else if (tx.type === "expense") {
+        monthData.expense += num(tx.amount);
+      }
+    }
+  }
+
   const budgetTop = (budgets as Array<{ amount: number | string; period: string }>)[0];
   const goalTop = goals[0];
   const debtTop = debts[0];
@@ -226,5 +246,6 @@ export async function getDashboardData() {
     budgetTop,
     goalTop,
     debtTop,
+    trendData,
   };
 }

@@ -1,0 +1,4 @@
+cd 'D:\New folder\IT\it-support-cctv'
+git add .
+git commit -m "update"
+git push

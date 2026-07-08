@@ -18,7 +18,7 @@ body {
     radial-gradient(circle at 85% 0%, #d6f0ea, transparent 30%),
     var(--background);
   color: var(--foreground);
-  font-family: "Noto Sans Thai", "Segoe UI", sans-serif;
+  font-family: var(--font-noto-sans-thai), "Segoe UI", sans-serif;
 }
 
 a {

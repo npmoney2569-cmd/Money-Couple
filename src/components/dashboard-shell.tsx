@@ -4,6 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
 import styles from "./dashboard-shell.module.css";
+import {
+  LayoutDashboard,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Split,
+  ArrowLeftRight,
+  Wallet,
+  LayoutGrid,
+  Tag,
+  PiggyBank,
+  Target,
+  HandCoins,
+  Gem,
+  Receipt,
+  BarChart3,
+  Calendar,
+  Search,
+  Bell,
+  MessageSquare,
+  Settings,
+  Users,
+  Shield,
+} from "lucide-react";
 
 type DashboardShellProps = {
   email?: string;
@@ -12,47 +35,47 @@ type DashboardShellProps = {
 
 type MenuGroup = {
   title: string;
-  items: { label: string; href: string; icon: string }[];
+  items: { label: string; href: string; icon: React.ComponentType<{ className?: string; size?: number }> }[];
 };
 
 const menuGroups: MenuGroup[] = [
   {
     title: "ภาพรวม",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: "📊" }],
+    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }],
   },
   {
     title: "รายการ",
     items: [
-      { label: "รายรับ", href: "/dashboard/income", icon: "⬇" },
-      { label: "รายจ่าย", href: "/dashboard/expense", icon: "⬆" },
-      { label: "Split Transaction", href: "/dashboard/splits", icon: "⫮" },
-      { label: "โอนเงิน", href: "/dashboard/transfer", icon: "↔" },
-      { label: "บัญชี", href: "/dashboard/accounts", icon: "💳" },
-      { label: "หมวดหมู่", href: "/dashboard/categories", icon: "◫" },
-      { label: "แท็ก", href: "/dashboard/tags", icon: "🏷" },
-      { label: "งบประมาณ", href: "/dashboard/budgets", icon: "◔" },
-      { label: "เป้าหมายการออม", href: "/dashboard/goals", icon: "◎" },
-      { label: "หนี้สิน", href: "/dashboard/debts", icon: "⚠" },
-      { label: "สินทรัพย์", href: "/dashboard/assets", icon: "🧾" },
-      { label: "บิล / Subscription", href: "/dashboard/subscriptions", icon: "🗓" },
+      { label: "รายรับ", href: "/dashboard/income", icon: ArrowDownCircle },
+      { label: "รายจ่าย", href: "/dashboard/expense", icon: ArrowUpCircle },
+      { label: "Split Transaction", href: "/dashboard/splits", icon: Split },
+      { label: "โอนเงิน", href: "/dashboard/transfer", icon: ArrowLeftRight },
+      { label: "บัญชี", href: "/dashboard/accounts", icon: Wallet },
+      { label: "หมวดหมู่", href: "/dashboard/categories", icon: LayoutGrid },
+      { label: "แท็ก", href: "/dashboard/tags", icon: Tag },
+      { label: "งบประมาณ", href: "/dashboard/budgets", icon: PiggyBank },
+      { label: "เป้าหมายการออม", href: "/dashboard/goals", icon: Target },
+      { label: "หนี้สิน", href: "/dashboard/debts", icon: HandCoins },
+      { label: "สินทรัพย์", href: "/dashboard/assets", icon: Gem },
+      { label: "บิล / Subscription", href: "/dashboard/subscriptions", icon: Receipt },
     ],
   },
   {
     title: "วิเคราะห์",
     items: [
-      { label: "รายงาน", href: "/dashboard/reports", icon: "📈" },
-      { label: "ปฏิทิน", href: "/dashboard/calendar", icon: "📅" },
-      { label: "ค้นหา / กรอง", href: "/dashboard/search", icon: "⌕" },
+      { label: "รายงาน", href: "/dashboard/reports", icon: BarChart3 },
+      { label: "ปฏิทิน", href: "/dashboard/calendar", icon: Calendar },
+      { label: "ค้นหา / กรอง", href: "/dashboard/search", icon: Search },
     ],
   },
   {
     title: "อื่นๆ",
     items: [
-      { label: "แจ้งเตือน", href: "/dashboard/alerts", icon: "🔔" },
-      { label: "LINE Bot", href: "/dashboard/line", icon: "💬" },
-      { label: "ตั้งค่า", href: "/dashboard/settings", icon: "⚙" },
-      { label: "ผู้ใช้งาน", href: "/dashboard/users", icon: "👥" },
-      { label: "ความปลอดภัย", href: "/dashboard/security", icon: "🛡" },
+      { label: "แจ้งเตือน", href: "/dashboard/alerts", icon: Bell },
+      { label: "LINE Bot", href: "/dashboard/line", icon: MessageSquare },
+      { label: "ตั้งค่า", href: "/dashboard/settings", icon: Settings },
+      { label: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
+      { label: "ความปลอดภัย", href: "/dashboard/security", icon: Shield },
     ],
   },
 ];
@@ -79,18 +102,20 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
           <section key={group.title}>
             <p className={styles.groupTitle}>{group.title}</p>
             <nav className={styles.menu}>
-              {group.items.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`${styles.item} ${isActive(item.href) ? styles.active : ""}`.trim()}
-                >
-                  <span className={styles.itemIcon} aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`${styles.item} ${active ? styles.active : ""}`.trim()}
+                  >
+                    <Icon className={styles.itemIcon} aria-hidden="true" size={18} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </section>
         ))}
@@ -112,19 +137,24 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
       </div>
 
       <div className={styles.mobileNav}>
-        <Link href="/dashboard" className={styles.mobileItem}>
-          ภาพรวม
+        <Link href="/dashboard" className={`${styles.mobileItem} ${isActive("/dashboard") ? styles.mobileActive : ""}`}>
+          <LayoutDashboard size={20} />
+          <span>ภาพรวม</span>
         </Link>
-        <Link href="/dashboard/income" className={styles.mobileItem}>
-          รายรับ
+        <Link href="/dashboard/income" className={`${styles.mobileItem} ${isActive("/dashboard/income") ? styles.mobileActive : ""}`}>
+          <ArrowDownCircle size={20} />
+          <span>รายรับ</span>
         </Link>
-        <Link href="/dashboard/expense" className={styles.mobileItem}>
-          รายจ่าย
+        <Link href="/dashboard/expense" className={`${styles.mobileItem} ${isActive("/dashboard/expense") ? styles.mobileActive : ""}`}>
+          <ArrowUpCircle size={20} />
+          <span>รายจ่าย</span>
         </Link>
-        <Link href="/dashboard/accounts" className={styles.mobileItem}>
-          บัญชี
+        <Link href="/dashboard/accounts" className={`${styles.mobileItem} ${isActive("/dashboard/accounts") ? styles.mobileActive : ""}`}>
+          <Wallet size={20} />
+          <span>บัญชี</span>
         </Link>
       </div>
     </div>
   );
 }
+
