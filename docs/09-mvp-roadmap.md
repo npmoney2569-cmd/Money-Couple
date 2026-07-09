@@ -74,9 +74,9 @@
 - [x] แสดงยอด income/expense สรุปบนแต่ละวัน
 
 ### 🟠 ลำดับ 2: รายการประจำ (Recurring Transactions)
-- [ ] CRUD recurring_transactions (ประเภท, จำนวน, บัญชี, หมวดหมู่, ความถี่)
-- [ ] Auto-create transactions ตามรอบ (รายวัน/สัปดาห์/เดือน/ปี)
-- [ ] แสดง upcoming transactions บน Dashboard/Calendar
+- [x] CRUD recurring_transactions (ประเภท, จำนวน, บัญชี, หมวดหมู่, ความถี่)
+- [x] Auto-create transactions ตามรอบ (รายวัน/สัปดาห์/เดือน/ปี)
+- [x] แสดง upcoming transactions บน Dashboard/Calendar
 
 ### 🟠 ลำดับ 3: ระบบแจ้งเตือนอัตโนมัติ
 - [x] แจ้งเตือนบิลใกล้ครบกำหนด (X วันก่อน due_day)
@@ -90,9 +90,9 @@
 - [x] Add to Home Screen prompt
 
 ### 🟡 ลำดับ 5: รายงานขั้นสูง
-- [ ] เปรียบเทียบรายเดือน MoM (Month-over-Month)
-- [ ] เปรียบเทียบรายปี YoY (Year-over-Year)
-- [ ] PDF Export
+- [x] เปรียบเทียบรายเดือน MoM (Month-over-Month)
+- [x] เปรียบเทียบรายปี YoY (Year-over-Year)
+- [x] PDF Export
 
 ### 🟡 ลำดับ 6: Receipt Upload
 - [x] อัปโหลดรูปใบเสร็จแนบกับธุรกรรม
