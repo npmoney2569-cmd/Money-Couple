@@ -15,6 +15,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const supabase = createClient();
   const ENABLE_GOOGLE_OAUTH = false;
+  const ENABLE_LINE_OAUTH = false; // Phase 3 — ทำทีหลังสุด
   const [identifier, setIdentifier] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -264,22 +265,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
               เข้าสู่ระบบด้วย Google
             </button>
           ) : null}
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => onOAuthSignIn("line")}
-            style={{
-              background: "#06c755",
-              color: "#ffffff",
-              border: "1px solid #06c755",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontSize: 15,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-          >
-            เข้าสู่ระบบด้วย LINE
-          </button>
+          {ENABLE_LINE_OAUTH ? (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => onOAuthSignIn("line")}
+              style={{
+                background: "#06c755",
+                color: "#ffffff",
+                border: "1px solid #06c755",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: 15,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              เข้าสู่ระบบด้วย LINE
+            </button>
+          ) : null}
           <p style={{ margin: 0 }}>
             <Link href="/forgot-password">ลืมรหัสผ่าน?</Link>
           </p>

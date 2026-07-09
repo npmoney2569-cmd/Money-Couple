@@ -73,7 +73,7 @@ create table if not exists public.accounts (
   id              uuid primary key default gen_random_uuid(),
   user_id         uuid          not null references public.users(id) on delete cascade,
   name            varchar(100)  not null,
-  type            varchar(20)   not null check (type in ('cash','bank','credit_card','e_wallet','investment')),
+  type            varchar(20)   not null check (type in ('cash','bank','credit_card','e_wallet','investment','savings')),
   balance         decimal(15,2) not null default 0,
   initial_balance decimal(15,2) not null default 0,
   currency        varchar(3)    not null default 'THB',
@@ -224,7 +224,8 @@ create table if not exists public.goals (
   user_id        uuid          not null references public.users(id) on delete cascade,
   name           varchar(200)  not null,
   target_amount  decimal(15,2) not null check (target_amount > 0),
-  current_amount decimal(15,2) not null default 0,
+  current_amount decimal(15,2),
+  account_id     uuid          references public.accounts(id) on delete set null,
   target_date    date,
   icon           varchar(50),
   created_at     timestamptz   not null default now()

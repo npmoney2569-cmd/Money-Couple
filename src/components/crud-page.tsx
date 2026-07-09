@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +12,7 @@ export type FieldDef = {
   type: FieldType;
   placeholder?: string;
   required?: boolean;
+  defaultValue?: string | number | boolean;
   options?: { label: string; value: string | number | boolean }[];
   optionsQuery?: {
     table: string;
@@ -38,6 +39,7 @@ type CrudPageProps = {
   filter?: { field: string; value: string | number | boolean };
   orderBy?: string;
   orderAscending?: boolean;
+  pageSize?: number;
 };
 
 function defaultRender(value: unknown) {
@@ -48,6 +50,7 @@ function defaultRender(value: unknown) {
 }
 
 function initialFieldValue(field: FieldDef) {
+  if (field.defaultValue !== undefined) return field.defaultValue;
   if (field.type === "checkbox") return false;
   if (field.type === "multiselect") return [];
   return "";
@@ -62,6 +65,7 @@ export default function CrudPage({
   filter,
   orderBy = "created_at",
   orderAscending = false,
+  pageSize = 50,
 }: CrudPageProps) {
   const supabase = useMemo(() => createClient(), []);
   const hasTagField = table === "transactions" && fields.some((field) => field.key === "tag_ids" && field.type === "multiselect");
@@ -78,6 +82,8 @@ export default function CrudPage({
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Merge static field.options + dynamically-loaded fieldOptions for cell rendering
   const allOptions = useMemo(() => {
@@ -159,22 +165,27 @@ export default function CrudPage({
     setIsEditing(false);
   }
 
-  async function loadData() {
+  async function loadData(page = currentPage) {
     setLoading(true);
-    let query = supabase.from(table as any).select("*");
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase.from(table as any).select("*", { count: "exact" });
     if (filter) {
       query = query.eq(filter.field, filter.value);
     }
     if (orderBy) {
       query = query.order(orderBy, { ascending: orderAscending });
     }
-    const { data, error } = await query.limit(200);
+    const { data, error, count } = await query.range(from, to);
     setLoading(false);
     if (error) {
       setStatus(`โหลดข้อมูล ${table} ไม่สำเร็จ: ${error.message}`);
       setRows([]);
       return;
     }
+
+    setTotalCount(count ?? 0);
 
     if (hasTagField) {
       const baseRows = (data ?? []) as Array<Record<string, unknown>>;
@@ -212,9 +223,10 @@ export default function CrudPage({
   }
 
   useEffect(() => {
-    loadData();
+    setCurrentPage(1);
+    loadData(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, orderBy, orderAscending, table]);
+  }, [filter, orderBy, orderAscending, table, pageSize]);
 
   function updateFormValue(key: string, value: unknown) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -246,7 +258,9 @@ export default function CrudPage({
         return acc;
       }
       if (field.type === "number") {
-        acc[field.key] = value === "" || value === null ? null : Number(value);
+        acc[field.key] = value === "" || value === null || value === undefined
+          ? (field.defaultValue !== undefined ? Number(field.defaultValue) : null)
+          : Number(value);
       } else if (field.type === "select") {
         acc[field.key] = value === "" ? null : value;
       } else {
@@ -485,6 +499,38 @@ export default function CrudPage({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalCount > pageSize && (
+        <div className={styles.pagination}>
+          <span className={styles.pageInfo}>
+            {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} จาก {totalCount.toLocaleString("th-TH")} รายการ
+          </span>
+          <div className={styles.pageButtons}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => { setCurrentPage(1); loadData(1); }}
+              disabled={currentPage === 1 || loading}
+            >«</button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => { const p = currentPage - 1; setCurrentPage(p); loadData(p); }}
+              disabled={currentPage === 1 || loading}
+            >‹</button>
+            <span className={styles.pageCurrent}>{currentPage} / {Math.ceil(totalCount / pageSize)}</span>
+            <button
+              className={styles.pageBtn}
+              onClick={() => { const p = currentPage + 1; setCurrentPage(p); loadData(p); }}
+              disabled={currentPage * pageSize >= totalCount || loading}
+            >›</button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => { const p = Math.ceil(totalCount / pageSize); setCurrentPage(p); loadData(p); }}
+              disabled={currentPage * pageSize >= totalCount || loading}
+            >»</button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

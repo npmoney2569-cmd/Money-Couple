@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./reports.module.css";
 
@@ -82,6 +82,7 @@ export default async function ReportsPage() {
   const incomeCoverage = totalIncome > 0 ? Math.min(1, totalExpense / totalIncome) : 0;
 
   const categoryMap = new Map(categories.map((category) => [category.id, category.name]));
+  const accountMap = new Map(accounts.map((account) => [account.id, account.name]));
   const expenseByCategory = new Map<string, number>();
 
   transactions
@@ -164,6 +165,14 @@ export default async function ReportsPage() {
           <article className={styles.statCard}>
             <p className={styles.statTitle}>จำนวนรายการ</p>
             <p className={styles.statValue}>{transactionCount}</p>
+          </article>
+          <article className={styles.statCard}>
+            <p className={styles.statTitle}>รายจ่ายเฉลี่ย/วัน</p>
+            <p className={styles.statValue}>{formatCurrency(averageDailyExpense)}</p>
+          </article>
+          <article className={styles.statCard}>
+            <p className={styles.statTitle}>สัดส่วนรายจ่าย/รายรับ</p>
+            <p className={styles.statValue}>{(incomeCoverage * 100).toFixed(1)}%</p>
           </article>
         </div>
 
@@ -260,7 +269,7 @@ export default async function ReportsPage() {
                       <td>{row.type}</td>
                       <td>{formatCurrency(num(row.amount))}</td>
                       <td>{row.category_id ? (categoryMap.get(row.category_id) ?? "-") : "-"}</td>
-                      <td>{row.account_id ?? "-"}</td>
+                      <td>{row.account_id ? (accountMap.get(row.account_id) ?? "-") : "-"}</td>
                       <td>{row.note ?? row.merchant ?? row.payee ?? row.source ?? "-"}</td>
                     </tr>
                   );

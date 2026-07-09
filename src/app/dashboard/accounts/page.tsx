@@ -1,4 +1,4 @@
-﻿import CrudPage from "@/components/crud-page";
+import CrudPage from "@/components/crud-page";
 
 export default function AccountsPage() {
   return (
@@ -16,6 +16,7 @@ export default function AccountsPage() {
           { label: "บัตรเครดิต", value: "credit_card" },
           { label: "e-Wallet", value: "e_wallet" },
           { label: "การลงทุน", value: "investment" },
+          { label: "ออมเงิน (เป้าหมาย)", value: "savings" },
         ]},
         { key: "balance", label: "ยอดคงเหลือ", type: "number", placeholder: "0" },
         { key: "initial_balance", label: "ยอดเริ่มต้น", type: "number", placeholder: "0" },

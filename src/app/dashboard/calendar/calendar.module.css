@@ -1,0 +1,492 @@
+.page {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0 40px;
+}
+
+/* ─── Header ─── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {}
+
+.title {
+  margin: 0 0 2px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  color: #8b92a5;
+  font-size: 0.9rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 170, 255, 0.25);
+  background: rgba(15, 30, 70, 0.85);
+  color: #c1d4ff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.navBtn:hover {
+  background: rgba(79, 140, 255, 0.2);
+  border-color: rgba(79, 140, 255, 0.5);
+  color: #fff;
+}
+
+.todayBtn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(46, 227, 168, 0.35);
+  background: rgba(46, 227, 168, 0.1);
+  color: #2ee3a8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.todayBtn:hover {
+  background: rgba(46, 227, 168, 0.22);
+  border-color: #2ee3a8;
+}
+
+/* ─── Summary Bar ─── */
+.summaryBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.92), rgba(9, 24, 58, 0.94));
+  border: 1px solid rgba(139, 170, 255, 0.18);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.summaryItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: #667399;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.summaryValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 36px;
+  background: rgba(139, 170, 255, 0.14);
+  margin: 0 4px;
+}
+
+.income { color: #2ee3a8; }
+.expense { color: #ff6580; }
+.transfer { color: #4f8cff; }
+
+/* ─── Calendar Wrap ─── */
+.calendarWrap {
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.92), rgba(9, 24, 58, 0.94));
+  border: 1px solid rgba(139, 170, 255, 0.18);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 15, 40, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 16px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(139, 170, 255, 0.2);
+  border-top-color: #4f8cff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Day Headers ─── */
+.dayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.dayHeader {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #667399;
+  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Grid ─── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cellEmpty {
+  height: 90px;
+  border-radius: 10px;
+  background: rgba(139, 170, 255, 0.03);
+}
+
+.cell {
+  height: 90px;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 170, 255, 0.08);
+  background: rgba(9, 20, 55, 0.5);
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.cell:hover {
+  border-color: rgba(79, 140, 255, 0.35);
+  background: rgba(12, 28, 75, 0.8);
+}
+
+.cellToday {
+  border-color: rgba(46, 227, 168, 0.45) !important;
+  background: rgba(46, 227, 168, 0.06) !important;
+}
+
+.cellSelected {
+  border-color: rgba(79, 140, 255, 0.7) !important;
+  background: rgba(79, 140, 255, 0.12) !important;
+  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.25);
+}
+
+.cellHasData {
+  border-color: rgba(139, 170, 255, 0.18);
+}
+
+.cellDate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dateNum {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c1d4ff;
+  line-height: 1;
+}
+
+.cellToday .dateNum {
+  color: #2ee3a8;
+}
+
+.cellAmounts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.amtIncome {
+  font-size: 0.65rem;
+  color: #2ee3a8;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.amtExpense {
+  font-size: 0.65rem;
+  color: #ff6580;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.txCount {
+  font-size: 0.6rem;
+  color: #667399;
+  margin-top: auto;
+  line-height: 1;
+}
+
+/* ─── Detail Panel ─── */
+.detailPanel {
+  background: linear-gradient(160deg, rgba(10, 35, 86, 0.95), rgba(9, 24, 58, 0.97));
+  border: 1px solid rgba(79, 140, 255, 0.35);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detailTitle {
+  margin: 0;
+  font-size: 1rem;
+  color: #eef3ff;
+  font-weight: 600;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+  background: transparent;
+  color: #8b92a5;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.closeBtn:hover {
+  background: rgba(255, 101, 128, 0.12);
+  border-color: rgba(255, 101, 128, 0.4);
+  color: #ff6580;
+}
+
+.detailEmpty {
+  color: #667399;
+  font-size: 0.9rem;
+  padding: 16px 0;
+  text-align: center;
+}
+
+.detailSummary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(9, 18, 50, 0.6);
+  border-radius: 10px;
+}
+
+.detailSumItem {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ─── Transaction List ─── */
+.txList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.txItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(9, 18, 50, 0.55);
+  border: 1px solid rgba(139, 170, 255, 0.1);
+  transition: border-color 0.15s;
+}
+
+.txItem:hover {
+  border-color: rgba(79, 140, 255, 0.25);
+}
+
+.txBadge {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.badgeIncome {
+  background: rgba(46, 227, 168, 0.15);
+  border: 1px solid rgba(46, 227, 168, 0.3);
+  color: #2ee3a8;
+}
+
+.badgeExpense {
+  background: rgba(255, 101, 128, 0.15);
+  border: 1px solid rgba(255, 101, 128, 0.3);
+  color: #ff6580;
+}
+
+.badgeTransfer {
+  background: rgba(79, 140, 255, 0.15);
+  border: 1px solid rgba(79, 140, 255, 0.3);
+  color: #4f8cff;
+}
+
+.txInfo {
+  min-width: 0;
+}
+
+.txLabel {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #eef3ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txCat {
+  font-size: 0.72rem;
+  color: #667399;
+  margin-top: 2px;
+}
+
+.txAmount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 700px) {
+  .calendarWrap {
+    padding: 10px;
+  }
+
+  .cellEmpty,
+  .cell {
+    height: 68px;
+  }
+
+  .cell {
+    padding: 4px;
+  }
+
+  .dateNum {
+    font-size: 0.75rem;
+  }
+
+  .amtIncome,
+  .amtExpense {
+    font-size: 0.58rem;
+  }
+
+  .txCount {
+    display: none;
+  }
+
+  .summaryBar {
+    padding: 10px 12px;
+  }
+
+  .summaryValue {
+    font-size: 0.9rem;
+  }
+
+  .detailPanel {
+    padding: 14px;
+  }
+
+  .detailTitle {
+    font-size: 0.88rem;
+  }
+
+  .txItem {
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .txLabel {
+    font-size: 0.8rem;
+  }
+
+  .txAmount {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .cellEmpty,
+  .cell {
+    height: 56px;
+  }
+
+  .dayHeader {
+    font-size: 0.68rem;
+    padding: 4px 0;
+  }
+
+  .amtIncome,
+  .amtExpense {
+    display: none;
+  }
+}
