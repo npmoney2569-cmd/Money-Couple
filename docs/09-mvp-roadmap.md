@@ -79,10 +79,10 @@
 - [ ] แสดง upcoming transactions บน Dashboard/Calendar
 
 ### 🟠 ลำดับ 3: ระบบแจ้งเตือนอัตโนมัติ
-- [ ] แจ้งเตือนบิลใกล้ครบกำหนด (X วันก่อน due_day)
-- [ ] แจ้งเตือนเกินงบประมาณ (expense > budget amount)
-- [ ] แจ้งเตือนเป้าหมายบรรลุ (balance >= target_amount)
-- [ ] Scheduled job หรือ trigger สร้าง notification อัตโนมัติ
+- [x] แจ้งเตือนบิลใกล้ครบกำหนด (X วันก่อน due_day)
+- [x] แจ้งเตือนเกินงบประมาณ (expense > budget amount)
+- [x] แจ้งเตือนเป้าหมายบรรลุ (balance >= target_amount)
+- [x] Scheduled job หรือ trigger สร้าง notification อัตโนมัติ
 
 ### 🟡 ลำดับ 4: PWA
 - [ ] `manifest.json` (icon, theme, name, standalone)
