@@ -372,6 +372,83 @@ create trigger trg_check_goal_achieved
 
 
 -- =============================================================
+-- Generic Entity Audit Logging Trigger
+-- =============================================================
+create or replace function public.log_entity_audit()
+returns trigger language plpgsql security definer as $$
+declare
+  v_user_id uuid;
+  v_action varchar(10);
+  v_details jsonb;
+begin
+  if TG_OP = 'INSERT' then
+    v_user_id := coalesce(new.user_id, auth.uid());
+    v_action := 'create';
+    v_details := to_jsonb(new);
+  elsif TG_OP = 'UPDATE' then
+    v_user_id := coalesce(new.user_id, auth.uid());
+    v_action := 'update';
+    v_details := jsonb_build_object(
+      'old', to_jsonb(old),
+      'new', to_jsonb(new)
+    );
+  elsif TG_OP = 'DELETE' then
+    v_user_id := coalesce(old.user_id, auth.uid());
+    v_action := 'delete';
+    v_details := to_jsonb(old);
+  end if;
+
+  if v_user_id is not null then
+    insert into public.audit_logs (user_id, entity_type, entity_id, action, details)
+    values (
+      v_user_id,
+      TG_TABLE_NAME,
+      coalesce(new.id, old.id),
+      v_action,
+      v_details
+    );
+  end if;
+
+  if TG_OP = 'DELETE' then
+    return old;
+  else
+    return new;
+  end if;
+end;
+$$;
+
+drop trigger if exists trg_audit_transactions on public.transactions;
+create trigger trg_audit_transactions
+  after insert or update or delete on public.transactions
+  for each row execute procedure public.log_entity_audit();
+
+drop trigger if exists trg_audit_budgets on public.budgets;
+create trigger trg_audit_budgets
+  after insert or update or delete on public.budgets
+  for each row execute procedure public.log_entity_audit();
+
+drop trigger if exists trg_audit_goals on public.goals;
+create trigger trg_audit_goals
+  after insert or update or delete on public.goals
+  for each row execute procedure public.log_entity_audit();
+
+drop trigger if exists trg_audit_debts on public.debts;
+create trigger trg_audit_debts
+  after insert or update or delete on public.debts
+  for each row execute procedure public.log_entity_audit();
+
+drop trigger if exists trg_audit_assets on public.assets;
+create trigger trg_audit_assets
+  after insert or update or delete on public.assets
+  for each row execute procedure public.log_entity_audit();
+
+drop trigger if exists trg_audit_bills on public.bills_subscriptions;
+create trigger trg_audit_bills
+  after insert or update or delete on public.bills_subscriptions
+  for each row execute procedure public.log_entity_audit();
+
+
+-- =============================================================
 -- Verify: list all triggers on transactions
 -- =============================================================
 -- select trigger_name, event_manipulation, action_timing

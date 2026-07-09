@@ -1,4 +1,4 @@
-﻿import CrudPage from "@/components/crud-page";
+import CrudPage from "@/components/crud-page";
 
 export default function ExpensePage() {
   return (
@@ -34,6 +34,7 @@ export default function ExpensePage() {
           type: "multiselect",
           optionsQuery: { table: "tags", labelKey: "name", valueKey: "id", orderBy: "name", orderAscending: true },
         },
+        { key: "receipt_url", label: "อัปโหลดใบเสร็จ", type: "file" },
         { key: "note", label: "โน้ต", type: "textarea" },
       ]}
       columns={[
@@ -43,6 +44,18 @@ export default function ExpensePage() {
         { key: "category_id", label: "หมวดหมู่" },
         { key: "account_id", label: "บัญชี" },
         { key: "tag_ids", label: "แท็ก" },
+        {
+          key: "receipt_url",
+          label: "ใบเสร็จ",
+          render: (val: any) =>
+            val ? (
+              <a href={val} target="_blank" rel="noreferrer" style={{ color: "#38bdf8", textDecoration: "underline" }}>
+                ดูรูป
+              </a>
+            ) : (
+              "-"
+            ),
+        },
       ]}
     />
   );

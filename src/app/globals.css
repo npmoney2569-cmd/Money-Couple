@@ -4,6 +4,42 @@
   --card: #ffffff;
   --muted: #4a5d53;
   --accent: #2f7a57;
+
+  /* Dashboard Theme Variables (Default Dark) */
+  --bg-shell: radial-gradient(circle at 8% 8%, rgba(54, 103, 255, 0.24), transparent 22%),
+              radial-gradient(circle at 92% 0%, rgba(0, 201, 255, 0.14), transparent 20%),
+              linear-gradient(180deg, #040a1d 0%, #06142d 50%, #081a3b 100%);
+  --bg-sidebar: linear-gradient(180deg, rgba(8, 18, 44, 0.95), rgba(6, 18, 46, 0.88));
+  --bg-card: linear-gradient(160deg, rgba(10, 35, 86, 0.92), rgba(9, 24, 58, 0.94));
+  --bg-card-hover: rgba(10, 26, 60, 0.85);
+  --border-card: rgba(139, 170, 255, 0.22);
+  --text-main: #e8f1ff;
+  --text-muted: #8b92a5;
+  --text-title: #b7cbf6;
+  --bg-topbar: rgba(5, 16, 39, 0.86);
+  --border-main: rgba(143, 171, 255, 0.2);
+}
+
+/* Dashboard Theme Variables (Light Mode) */
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #f8fafc;
+  --muted: #64748b;
+  --accent: #15803d;
+
+  --bg-shell: radial-gradient(circle at 8% 8%, rgba(54, 103, 255, 0.12), transparent 22%),
+              radial-gradient(circle at 92% 0%, rgba(0, 201, 255, 0.08), transparent 20%),
+              linear-gradient(180deg, #f5f7fb 0%, #edf1f7 50%, #e2e8f0 100%);
+  --bg-sidebar: linear-gradient(180deg, #ffffff, #f1f5f9);
+  --bg-card: linear-gradient(160deg, #ffffff, #f8fafc);
+  --bg-card-hover: #f1f5f9;
+  --border-card: rgba(15, 23, 42, 0.08);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-title: #1e293b;
+  --bg-topbar: rgba(255, 255, 255, 0.85);
+  --border-main: rgba(15, 23, 42, 0.08);
 }
 
 * {

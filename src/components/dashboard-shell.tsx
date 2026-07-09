@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
+import ThemeToggle from "@/components/theme-toggle";
 import styles from "./dashboard-shell.module.css";
 import {
   LayoutDashboard,
@@ -26,6 +27,7 @@ import {
   Settings,
   Users,
   Shield,
+  History,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -73,6 +75,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { label: "แจ้งเตือน", href: "/dashboard/alerts", icon: Bell },
       { label: "LINE Bot", href: "/dashboard/line", icon: MessageSquare },
+      { label: "ประวัติกิจกรรม", href: "/dashboard/audit-logs", icon: History },
       { label: "ตั้งค่า", href: "/dashboard/settings", icon: Settings },
       { label: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
       { label: "ความปลอดภัย", href: "/dashboard/security", icon: Shield },
@@ -119,6 +122,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
             </nav>
           </section>
         ))}
+        <ThemeToggle variant="sidebar" />
       </aside>
 
       <div className={styles.main}>
@@ -128,6 +132,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
             <small>ภาพรวมการเงินของวันนี้</small>
           </div>
           <div className={styles.topRight}>
+            <ThemeToggle variant="topbar" />
             <span className={styles.chip}>{email ?? "guest"}</span>
             <LogoutButton />
           </div>

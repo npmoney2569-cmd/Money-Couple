@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./form-card.module.css";
 
-export type FieldType = "text" | "number" | "textarea" | "select" | "multiselect" | "checkbox" | "date";
+export type FieldType = "text" | "number" | "textarea" | "select" | "multiselect" | "checkbox" | "date" | "file";
 
 export type FieldDef = {
   key: string;
@@ -436,6 +436,54 @@ export default function CrudPage({
                 />
                 {field.placeholder || field.label}
               </label>
+            ) : field.type === "file" ? (
+              <div className={styles.fileUploadArea}>
+                {form[field.key] ? (
+                  <div className={styles.filePreview}>
+                    <img src={String(form[field.key])} alt="Receipt preview" className={styles.thumbnail} />
+                    <button
+                      type="button"
+                      className={styles.deleteFileBtn}
+                      onClick={() => updateFormValue(field.key, "")}
+                    >
+                      ✕ ลบรูปภาพ
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+
+                      setStatus("กำลังอัปโหลดรูปภาพใบเสร็จ...");
+                      try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อนอัปโหลด");
+
+                        const fileExt = file.name.split(".").pop();
+                        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+                        
+                        const { error: uploadError } = await supabase.storage
+                          .from("receipts")
+                          .upload(fileName, file);
+
+                        if (uploadError) throw uploadError;
+
+                        const { data: { publicUrl } } = supabase.storage
+                          .from("receipts")
+                          .getPublicUrl(fileName);
+
+                        updateFormValue(field.key, publicUrl);
+                        setStatus("อัปโหลดใบเสร็จสำเร็จ! กดบันทึกเพื่อบันทึกรายการ");
+                      } catch (err: any) {
+                        setStatus(`อัปโหลดล้มเหลว: ${err.message}`);
+                      }
+                    }}
+                  />
+                )}
+              </div>
             ) : (
               <input
                 id={field.key}

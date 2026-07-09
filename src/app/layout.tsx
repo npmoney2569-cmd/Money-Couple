@@ -20,7 +20,32 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" className={notoSansThai.variable}>
-      <body>{children}</body>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#040a1d" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
+      <body>
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(reg) {
+                      console.log('PWA Service Worker registered:', reg.scope);
+                    },
+                    function(err) {
+                      console.log('PWA Service Worker failed:', err);
+                    }
+                  );
+                });
+              }
+            `
+          }}
+        />
+      </body>
     </html>
   );
 }

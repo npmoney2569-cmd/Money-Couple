@@ -270,3 +270,47 @@
   padding: 0 8px;
   white-space: nowrap;
 }
+
+/* File Upload & Preview */
+.fileUploadArea {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.filePreview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(139, 170, 255, 0.05);
+  border: 1px solid rgba(139, 170, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px;
+  width: max-content;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 170, 255, 0.2);
+}
+
+.deleteFileBtn {
+  background: rgba(255, 101, 128, 0.1);
+  border: 1px solid rgba(255, 101, 128, 0.3);
+  color: #ff6580;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.deleteFileBtn:hover {
+  background: rgba(255, 101, 128, 0.2);
+  border-color: #ff6580;
+}

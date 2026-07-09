@@ -1,0 +1,85 @@
+.topbarBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-card);
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.topbarBtn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-main);
+  transform: scale(1.05);
+}
+
+/* Sidebar Row & Switch style */
+.sidebarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(139, 170, 255, 0.04);
+  border: 1px solid var(--border-card);
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.sidebarRow:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-main);
+}
+
+.sidebarLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.switch {
+  width: 38px;
+  height: 20px;
+  border-radius: 99px;
+  background: #cbd5e1; /* light gray when off */
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.switchOn {
+  background: #2ee3a8; /* green when on (dark theme active) */
+}
+
+.handle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.switchOn .handle {
+  transform: translateX(18px);
+}
+
+.switchIcon {
+  color: #334155;
+}
+
+.switchOn .switchIcon {
+  color: #0f172a;
+}
