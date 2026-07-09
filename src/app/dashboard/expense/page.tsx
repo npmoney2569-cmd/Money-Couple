@@ -1,3 +1,5 @@
+"use client";
+
 import CrudPage from "@/components/crud-page";
 
 export default function ExpensePage() {
