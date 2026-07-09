@@ -85,9 +85,9 @@
 - [x] Scheduled job หรือ trigger สร้าง notification อัตโนมัติ
 
 ### 🟡 ลำดับ 4: PWA
-- [ ] `manifest.json` (icon, theme, name, standalone)
-- [ ] Service Worker (cache shell assets)
-- [ ] Add to Home Screen prompt
+- [x] `manifest.json` (icon, theme, name, standalone)
+- [x] Service Worker (cache shell assets)
+- [x] Add to Home Screen prompt
 
 ### 🟡 ลำดับ 5: รายงานขั้นสูง
 - [ ] เปรียบเทียบรายเดือน MoM (Month-over-Month)
@@ -95,17 +95,17 @@
 - [ ] PDF Export
 
 ### 🟡 ลำดับ 6: Receipt Upload
-- [ ] อัปโหลดรูปใบเสร็จแนบกับธุรกรรม
-- [ ] ใช้ Supabase Storage
-- [ ] แสดง thumbnail ในตารางรายการ
+- [x] อัปโหลดรูปใบเสร็จแนบกับธุรกรรม
+- [x] ใช้ Supabase Storage
+- [x] แสดง thumbnail ในตารางรายการ
 
 ### 🟢 ลำดับ 7: Audit Log
-- [ ] บันทึกประวัติการแก้ไข CRUD
-- [ ] แสดงหน้า Audit Log
+- [x] บันทึกประวัติการแก้ไข CRUD
+- [x] แสดงหน้า Audit Log
 
 ### 🟢 ลำดับ 8: Dark Mode Toggle จริง
-- [ ] ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง
-- [ ] เชื่อม localStorage + CSS variables
+- [x] ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง
+- [x] เชื่อม localStorage + CSS variables
 
 ---
 
