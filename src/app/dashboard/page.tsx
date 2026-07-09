@@ -1,5 +1,6 @@
 import styles from "./dashboard.module.css";
 import { getDashboardData, thb } from "@/lib/dashboard-data";
+import QuickRecordWidget from "@/components/quick-record-widget";
 import {
   Wallet,
   ArrowDown,
@@ -267,25 +268,28 @@ export default async function DashboardPage() {
           </ul>
         </article>
 
-        <article className={styles.card}>
-          <h2 className={styles.sectionTitle}>บิล / Subscription ใกล้ครบกำหนด</h2>
-          <ul className={styles.list}>
-            {data.bills.map((bill) => (
-              <li key={bill.id} className={styles.row}>
-                <div className={styles.rowLeft}>
-                  <div className={`${styles.rowIcon} ${styles.bgPurple}`}>
-                    <Receipt size={16} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <article className={styles.card}>
+            <h2 className={styles.sectionTitle}>บิล / Subscription ใกล้ครบกำหนด</h2>
+            <ul className={styles.list}>
+              {data.bills.map((bill) => (
+                <li key={bill.id} className={styles.row}>
+                  <div className={styles.rowLeft}>
+                    <div className={`${styles.rowIcon} ${styles.bgPurple}`}>
+                      <Receipt size={16} />
+                    </div>
+                    <div>
+                      <p className={styles.strong}>{bill.name}</p>
+                      <small className={styles.kpiSmall}>วันที่ {bill.due_day} ของเดือน</small>
+                    </div>
                   </div>
-                  <div>
-                    <p className={styles.strong}>{bill.name}</p>
-                    <small className={styles.kpiSmall}>วันที่ {bill.due_day} ของเดือน</small>
-                  </div>
-                </div>
-                <span>{thb(Number(bill.amount))}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
+                  <span>{thb(Number(bill.amount))}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+          <QuickRecordWidget accounts={data.accounts} categories={data.categories} />
+        </div>
       </section>
 
       <section className={styles.threeCol}>

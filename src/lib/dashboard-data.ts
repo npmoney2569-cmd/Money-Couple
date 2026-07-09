@@ -22,6 +22,7 @@ type AccountRow = {
 type CategoryRow = {
   id: string;
   name: string;
+  type: string;
 };
 
 type BillRow = {
@@ -109,7 +110,7 @@ export async function getDashboardData() {
       .order("date", { ascending: false })
       .limit(8),
     supabase.from("accounts").select("id,name,balance").eq("is_active", true).order("name"),
-    supabase.from("categories").select("id,name"),
+    supabase.from("categories").select("id,name,type"),
     supabase.from("budgets").select("id,amount,period").order("start_date", { ascending: false }).limit(6),
     supabase.from("goals").select("id,name,target_amount,current_amount").order("created_at", { ascending: false }).limit(4),
     supabase.from("debts").select("id,counterparty,principal").order("created_at", { ascending: false }).limit(4),
@@ -243,6 +244,7 @@ export async function getDashboardData() {
     expenseSplit,
     bills,
     notifications,
+    categories,
     budgetTop,
     goalTop,
     debtTop,
