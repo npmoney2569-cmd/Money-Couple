@@ -392,18 +392,3 @@
   color: #ff6580;
 }
 
-/* ── PDF / Print optimisation ── */
-@media print {
-  body { background: white !important; color: black !important; }
-  .actionsGroup { display: none !important; }
-  .card {
-    background: white !important;
-    border: 1px solid #ddd !important;
-    box-shadow: none !important;
-    color: black !important;
-  }
-  .compareSection { border-color: #ddd !important; background: #f8f8f8 !important; }
-  .compareCard { background: white !important; border-color: #ddd !important; }
-  .diffPositive { background: #e8fff5 !important; color: #15803d !important; }
-  .diffNegative { background: #fff0f3 !important; color: #dc2626 !important; }
-}

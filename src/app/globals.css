@@ -90,3 +90,9 @@ html {
 *::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(173, 204, 255, 0.82), rgba(126, 167, 255, 0.76));
 }
+
+/* ÄÄ PDF / Print optimisation (reports page) ÄÄ */
+@media print {
+  body { background: white !important; color: black !important; }
+  nav, aside, .no-print { display: none !important; }
+}

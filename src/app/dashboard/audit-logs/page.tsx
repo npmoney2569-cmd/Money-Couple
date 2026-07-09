@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { History, Eye, ArrowLeft, ArrowRight } from "lucide-react";
 import styles from "./audit-logs.module.css";
@@ -44,7 +44,7 @@ export default function AuditLogsPage() {
   // Detail Modal
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  async function loadLogs(pageNum: number) {
+  const loadLogs = useCallback(async (pageNum: number) => {
     setLoading(true);
     setError(null);
 
@@ -67,11 +67,11 @@ export default function AuditLogsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase]);
 
   useEffect(() => {
     loadLogs(page);
-  }, [page]);
+  }, [page, loadLogs]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

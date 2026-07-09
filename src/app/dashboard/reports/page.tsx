@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./reports.module.css";
+import PrintButton from "./PrintButton";
 
 type TransactionRow = {
   id: string;
@@ -177,6 +178,7 @@ export default async function ReportsPage() {
               <input id="end" name="end" type="date" defaultValue={monthEnd} className={styles.dateInput} />
               <button type="submit" className={styles.exportButtonSecondary}>Export ช่วงเวลา</button>
             </form>
+            <PrintButton />
           </div>
         </div>
 

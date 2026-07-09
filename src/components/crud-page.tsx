@@ -440,6 +440,7 @@ export default function CrudPage({
               <div className={styles.fileUploadArea}>
                 {form[field.key] ? (
                   <div className={styles.filePreview}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={String(form[field.key])} alt="Receipt preview" className={styles.thumbnail} />
                     <button
                       type="button"
