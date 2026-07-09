@@ -69,9 +69,9 @@
 ## Phase 2 — Extended Features (กำลังทำ)
 
 ### 🟠 ลำดับ 1: ปฏิทินการเงิน (Calendar View)
-- [ ] แปลงหน้าปฏิทินจากตารางธุรกรรมเป็น Calendar Grid จริง
-- [ ] กดวันที่ดู popup รายการธุรกรรมของวันนั้น
-- [ ] แสดงยอด income/expense สรุปบนแต่ละวัน
+- [x] แปลงหน้าปฏิทินจากตารางธุรกรรมเป็น Calendar Grid จริง
+- [x] กดวันที่ดู popup รายการธุรกรรมของวันนั้น
+- [x] แสดงยอด income/expense สรุปบนแต่ละวัน
 
 ### 🟠 ลำดับ 2: รายการประจำ (Recurring Transactions)
 - [ ] CRUD recurring_transactions (ประเภท, จำนวน, บัญชี, หมวดหมู่, ความถี่)

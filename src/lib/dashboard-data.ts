@@ -74,8 +74,84 @@ function percent(current: number, prev: number) {
   return ((current - prev) / Math.abs(prev)) * 100;
 }
 
+async function checkAndCreateBillAlerts(supabase: any, userId: string) {
+  try {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0-indexed
+    const todayDay = today.getDate();
+
+    // Fetch active bills and subscriptions for the user
+    const { data: bills, error: billsError } = await supabase
+      .from("bills_subscriptions")
+      .select("id, name, amount, type, due_day, remind_days_before")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (billsError || !bills) return;
+
+    const THAI_MONTHS_SHORT = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ];
+
+    for (const bill of bills) {
+      const dueDay = bill.due_day;
+      const remindDays = bill.remind_days_before || 3;
+
+      // Determine due date in this month or next month
+      let dueYear = currentYear;
+      let dueMonth = currentMonth;
+
+      if (todayDay > dueDay) {
+        if (currentMonth === 11) {
+          dueMonth = 0;
+          dueYear = currentYear + 1;
+        } else {
+          dueMonth = currentMonth + 1;
+        }
+      }
+
+      const dueDate = new Date(dueYear, dueMonth, dueDay);
+      const diffTime = dueDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays >= 0 && diffDays <= remindDays) {
+        const dueDateStr = `${dueDay} ${THAI_MONTHS_SHORT[dueMonth]} ${dueYear + 543}`;
+        const typeLabel = bill.type === "subscription" ? "บริการรายเดือน" : "บิล";
+
+        const { data: existingNotif } = await supabase
+          .from("notifications")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("type", "bill_due")
+          .like("body", `%${bill.name}%`)
+          .like("body", `%${dueDateStr}%`)
+          .limit(1);
+
+        if (!existingNotif || existingNotif.length === 0) {
+          await supabase.from("notifications").insert([{
+            user_id: userId,
+            type: "bill_due",
+            title: `เตือนกำหนดชำระ ${typeLabel}! 📅`,
+            body: `${typeLabel} "${bill.name}" ยอดชำระ ฿${Number(bill.amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })} ใกล้ครบกำหนดในวันที่ ${dueDateStr}`,
+            sent_via: "push",
+            is_read: false
+          }]);
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error in checkAndCreateBillAlerts:", e);
+  }
+}
+
 export async function getDashboardData() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await checkAndCreateBillAlerts(supabase, user.id);
+  }
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);

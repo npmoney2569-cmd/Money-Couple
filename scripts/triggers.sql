@@ -214,6 +214,164 @@ create trigger trg_validate_transaction_split_total
   for each row execute procedure public.validate_transaction_split_total();
 
 -- =============================================================
+-- Budget Exceeded notification trigger
+-- =============================================================
+create or replace function public.check_budget_exceeded()
+returns trigger language plpgsql security definer as $$
+declare
+  v_budget_amount decimal(15,2);
+  v_budget_id uuid;
+  v_total_expenses decimal(15,2);
+  v_month_start date;
+  v_month_end date;
+  v_category_name varchar(100);
+begin
+  -- Only check if this is an expense transaction and not deleted
+  if new.type = 'expense' and new.deleted_at is null then
+    -- Get current transaction month boundaries
+    v_month_start := date_trunc('month', new.date)::date;
+    v_month_end := (date_trunc('month', new.date) + interval '1 month' - interval '1 day')::date;
+
+    -- Find if there is an active budget for this user and category in this period
+    select id, amount into v_budget_id, v_budget_amount
+    from public.budgets
+    where user_id = new.user_id
+      and category_id = new.category_id
+      and period = 'monthly'
+      and start_date <= new.date
+      and (end_date is null or end_date >= new.date)
+    limit 1;
+
+    -- If no category budget, check for a total budget (category_id is null)
+    if v_budget_id is null then
+      select id, amount into v_budget_id, v_budget_amount
+      from public.budgets
+      where user_id = new.user_id
+        and category_id is null
+        and period = 'monthly'
+        and start_date <= new.date
+        and (end_date is null or end_date >= new.date)
+      limit 1;
+    end if;
+
+    if v_budget_id is not null then
+      -- Calculate total expenses for this budget's category (or all categories if total budget)
+      if new.category_id is not null then
+        select coalesce(sum(amount), 0) into v_total_expenses
+        from public.transactions
+        where user_id = new.user_id
+          and type = 'expense'
+          and category_id = new.category_id
+          and date >= v_month_start
+          and date <= v_month_end
+          and deleted_at is null;
+      else
+        select coalesce(sum(amount), 0) into v_total_expenses
+        from public.transactions
+        where user_id = new.user_id
+          and type = 'expense'
+          and date >= v_month_start
+          and date <= v_month_end
+          and deleted_at is null;
+      end if;
+
+      -- If we exceeded the budget limit
+      if v_total_expenses > v_budget_amount then
+        -- Get category name
+        if new.category_id is not null then
+          select name into v_category_name from public.categories where id = new.category_id;
+        else
+          v_category_name := 'รวมทั้งหมด';
+        end if;
+
+        -- Prevent duplicate notifications for this budget in the same month
+        if not exists (
+          select 1 from public.notifications
+          where user_id = new.user_id
+            and type = 'budget_exceeded'
+            and created_at >= date_trunc('month', now())
+            and body like '%' || v_category_name || '%'
+        ) then
+          insert into public.notifications (user_id, type, title, body, sent_via)
+          values (
+            new.user_id,
+            'budget_exceeded',
+            'งบประมาณเกินกำหนด! ⚠️',
+            'ค่าใช้จ่ายสำหรับหมวดหมู่ "' || v_category_name || '" ในเดือนนี้คือ ฿' || trim(to_char(v_total_expenses, '999,999,999.99')) || ' ซึ่งเกินกว่างบประมาณที่ตั้งไว้ ฿' || trim(to_char(v_budget_amount, '999,999,999.99')),
+            'push'
+          );
+        end if;
+      end if;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_check_budget_exceeded on public.transactions;
+create trigger trg_check_budget_exceeded
+  after insert or update on public.transactions
+  for each row execute procedure public.check_budget_exceeded();
+
+
+-- =============================================================
+-- Goal Achieved / Balance Sync notification trigger
+-- =============================================================
+create or replace function public.check_goal_achieved()
+returns trigger language plpgsql security definer as $$
+declare
+  v_goal_id uuid;
+  v_goal_name varchar(200);
+  v_target_amount decimal(15,2);
+begin
+  -- Only trigger if this is a savings account and balance increased
+  if new.type = 'savings' and new.balance > old.balance then
+    -- Find if a goal is linked to this account
+    select id, name, target_amount into v_goal_id, v_goal_name, v_target_amount
+    from public.goals
+    where account_id = new.id
+    limit 1;
+
+    if v_goal_id is not null then
+      -- Sync goals.current_amount with accounts.balance
+      update public.goals
+      set current_amount = new.balance
+      where id = v_goal_id;
+
+      -- If new balance reaches target and old balance did not
+      if new.balance >= v_target_amount and old.balance < v_target_amount then
+        -- Prevent duplicate notifications for this goal
+        if not exists (
+          select 1 from public.notifications
+          where user_id = new.user_id
+            and type = 'goal_reached'
+            and body like '%' || v_goal_name || '%'
+        ) then
+          insert into public.notifications (user_id, type, title, body, sent_via)
+          values (
+            new.user_id,
+            'goal_reached',
+            'เป้าหมายการออมสำเร็จ! 🎉',
+            'ยินดีด้วย! คุณสามารถเก็บออมเงินบรรลุเป้าหมาย "' || v_goal_name || '" ครบ ฿' || trim(to_char(v_target_amount, '999,999,999.00')) || ' เรียบร้อยแล้ว 🎯',
+            'push'
+          );
+        end if;
+      end if;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_check_goal_achieved on public.accounts;
+create trigger trg_check_goal_achieved
+  after update on public.accounts
+  for each row execute procedure public.check_goal_achieved();
+
+
+-- =============================================================
 -- Verify: list all triggers on transactions
 -- =============================================================
 -- select trigger_name, event_manipulation, action_timing
