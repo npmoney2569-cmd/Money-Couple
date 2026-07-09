@@ -28,6 +28,7 @@ import {
   Users,
   Shield,
   History,
+  RefreshCw,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -60,6 +61,7 @@ const menuGroups: MenuGroup[] = [
       { label: "หนี้สิน", href: "/dashboard/debts", icon: HandCoins },
       { label: "สินทรัพย์", href: "/dashboard/assets", icon: Gem },
       { label: "บิล / Subscription", href: "/dashboard/subscriptions", icon: Receipt },
+      { label: "รายการประจำ", href: "/dashboard/recurring", icon: RefreshCw },
     ],
   },
   {
