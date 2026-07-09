@@ -10,7 +10,8 @@ type AuditLog = {
   entity_type: string;
   entity_id: string;
   action: "create" | "update" | "delete";
-  details: any;
+  old_data: any;
+  new_data: any;
   created_at: string;
 };
 
@@ -81,7 +82,7 @@ export default function AuditLogsPage() {
       const tableText = TABLE_TRANSLATIONS[log.entity_type] || log.entity_type;
       
       let extra = "";
-      const info = log.action === "update" ? log.details?.new : log.details;
+      const info = log.action === "update" ? log.new_data : (log.action === "delete" ? log.old_data : log.new_data);
       
       if (info) {
         if (info.amount) extra = ` (ยอดเงิน: ฿${Number(info.amount).toLocaleString()})`;
@@ -223,9 +224,16 @@ export default function AuditLogsPage() {
               </div>
               
               <div className={styles.jsonSection}>
-                <strong>ข้อมูล JSON ดิบ:</strong>
+                <strong>ข้อมูลก่อนแก้ไข (Old Data):</strong>
                 <pre className={styles.pre}>
-                  {JSON.stringify(selectedLog.details, null, 2)}
+                  {selectedLog.old_data ? JSON.stringify(selectedLog.old_data, null, 2) : "- ไม่มีข้อมูล -"}
+                </pre>
+              </div>
+              
+              <div className={styles.jsonSection}>
+                <strong>ข้อมูลหลังแก้ไข (New Data):</strong>
+                <pre className={styles.pre}>
+                  {selectedLog.new_data ? JSON.stringify(selectedLog.new_data, null, 2) : "- ไม่มีข้อมูล -"}
                 </pre>
               </div>
             </div>

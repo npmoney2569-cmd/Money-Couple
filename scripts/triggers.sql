@@ -379,33 +379,35 @@ returns trigger language plpgsql security definer as $$
 declare
   v_user_id uuid;
   v_action varchar(10);
-  v_details jsonb;
+  v_old_data jsonb;
+  v_new_data jsonb;
 begin
   if TG_OP = 'INSERT' then
     v_user_id := coalesce(new.user_id, auth.uid());
     v_action := 'create';
-    v_details := to_jsonb(new);
+    v_old_data := null;
+    v_new_data := to_jsonb(new);
   elsif TG_OP = 'UPDATE' then
     v_user_id := coalesce(new.user_id, auth.uid());
     v_action := 'update';
-    v_details := jsonb_build_object(
-      'old', to_jsonb(old),
-      'new', to_jsonb(new)
-    );
+    v_old_data := to_jsonb(old);
+    v_new_data := to_jsonb(new);
   elsif TG_OP = 'DELETE' then
     v_user_id := coalesce(old.user_id, auth.uid());
     v_action := 'delete';
-    v_details := to_jsonb(old);
+    v_old_data := to_jsonb(old);
+    v_new_data := null;
   end if;
 
   if v_user_id is not null then
-    insert into public.audit_logs (user_id, entity_type, entity_id, action, details)
+    insert into public.audit_logs (user_id, entity_type, entity_id, action, old_data, new_data)
     values (
       v_user_id,
       TG_TABLE_NAME,
       coalesce(new.id, old.id),
       v_action,
-      v_details
+      v_old_data,
+      v_new_data
     );
   end if;
 
