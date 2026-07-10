@@ -40,6 +40,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
     const nextPath = getSafeNextPath();
     const origin = window.location.origin;
+
+    if (provider === "line") {
+      const clientId = "2010660050";
+      const redirectUri = `${origin}/auth/line/callback`;
+      const state = Math.random().toString(36).substring(2, 15);
+      
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("line_oauth_state", state);
+      }
+
+      const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&state=${state}&scope=profile%20openid%20email`;
+
+      window.location.href = lineAuthUrl;
+      return;
+    }
+
     const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
     const { error } = await supabase.auth.signInWithOAuth({
