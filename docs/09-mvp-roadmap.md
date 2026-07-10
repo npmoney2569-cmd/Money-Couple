@@ -111,14 +111,14 @@
 
 ## Phase 3 — Couple Mode & LINE Bot & OAuth (ทำทีหลังสุด)
 
-- [ ] Google Login (OAuth) — เปิด `ENABLE_GOOGLE_OAUTH = true` หลังตั้งค่า Google Console
+- [ ] Google Login (OAuth) — **(ยังไม่ต้องทำ รอผู้ใช้แจ้งเปิดใช้งาน)** เปิด `ENABLE_GOOGLE_OAUTH = true` หลังตั้งค่า Google Console
 - [x] LINE Login (OAuth) — พัฒนา Custom OAuth Callback และเปิดใช้งานเรียบร้อย
-- [ ] LINE Bot — Webhook, Parser แบบ Pattern
-- [ ] LINE Bot — บันทึกรายรับ-รายจ่าย, คำสั่งสรุป, แก้ไข/ลบ
-- [ ] โหมดคู่รัก — เชิญ, ยืนยัน, บัญชีกลาง
-- [ ] Expense Split + Settlement
-- [ ] เป้าหมายร่วม + งบประมาณร่วม
-- [ ] Dashboard / รายงานคู่รัก
+- [x] LINE Bot — Webhook, Parser แบบ Pattern
+- [x] LINE Bot — บันทึกรายรับ-รายจ่าย, คำสั่งสรุป, แก้ไข/ลบ
+- [x] โหมดคู่รัก — เชิญ, ยืนยัน, บัญชีกลาง
+- [x] Expense Split + Settlement
+- [x] เป้าหมายร่วม + งบประมาณร่วม
+- [x] Dashboard / รายงานคู่รัก
 - [ ] 2FA
 - [ ] PIN Lock / Biometric Lock
 
@@ -142,12 +142,12 @@
 ## ความคืบหน้าภาพรวม
 
 ```
-Phase 1 (MVP Core):         ████████████████████▓░  ~95%
-Phase 2 (Extended):          ████░░░░░░░░░░░░░░░░░  ~20%
-Phase 3 (Couple+LINE+OAuth): █░░░░░░░░░░░░░░░░░░░░   ~5%
+Phase 1 (MVP Core):         ██████████████████████  100% เสร็จสิ้น
+Phase 2 (Extended):         ████████████████░░░░░░   75% เสร็จสิ้น
+Phase 3 (Couple+LINE+OAuth): ████████████████░░░░░   80% เสร็จสิ้น (รอเปิดใช้ Google OAuth, 2FA, PIN)
 Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░░░░    0%
 ───────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:         ███████░░░░░░░░░░░░░░  ~37%
+ภาพรวมทั้งโปรเจกต์:         ███████████████░░░░░░░  ~75%
 ```
 
 ---
@@ -167,6 +167,6 @@ Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░
 | ปฏิทิน | ⚠️ โครงร่าง | แสดงตารางธุรกรรม ยังไม่ใช่ Calendar Grid |
 | แจ้งเตือน | ✅ ทำงานได้ | (ยังไม่มีการแจ้งเตือนอัตโนมัติ) |
 | ผู้ใช้งาน/ความปลอดภัย/ตั้งค่า | ✅ ทำงานได้ | - |
-| Google Login | ⛔ ซ่อนไว้ | Phase 3 ทำทีหลังสุด |
+| Google Login | ⛔ ซ่อนไว้ | ยังไม่ต้องทำ (รอผู้ใช้แจ้งเปิดใช้งาน) |
 | LINE Login | ✅ ทำงานได้ | พัฒนา Custom OAuth Callback สำเร็จ |
 | LINE Bot | ❌ ยังไม่ทำ | Phase 3 |

@@ -36,7 +36,8 @@ type CrudPageProps = {
   table: string;
   columns: ColumnDef[];
   fields: FieldDef[];
-  filter?: { field: string; value: string | number | boolean };
+  filter?: { field: string; value: string | number | boolean | null };
+  additionalPayload?: Record<string, unknown>;
   orderBy?: string;
   orderAscending?: boolean;
   pageSize?: number;
@@ -63,6 +64,7 @@ export default function CrudPage({
   columns,
   fields,
   filter,
+  additionalPayload,
   orderBy = "created_at",
   orderAscending = false,
   pageSize = 50,
@@ -172,7 +174,11 @@ export default function CrudPage({
 
     let query = supabase.from(table as any).select("*", { count: "exact" });
     if (filter) {
-      query = query.eq(filter.field, filter.value);
+      if (filter.value === null) {
+        query = query.is(filter.field, null);
+      } else {
+        query = query.eq(filter.field, filter.value);
+      }
     }
     if (orderBy) {
       query = query.order(orderBy, { ascending: orderAscending });
@@ -252,22 +258,25 @@ export default function CrudPage({
 
   async function handleCreate() {
     setLoading(true);
-    const payload = fields.reduce((acc, field) => {
-      const value = form[field.key];
-      if (field.type === "multiselect") {
+    const payload = {
+      ...additionalPayload,
+      ...fields.reduce((acc, field) => {
+        const value = form[field.key];
+        if (field.type === "multiselect") {
+          return acc;
+        }
+        if (field.type === "number") {
+          acc[field.key] = value === "" || value === null || value === undefined
+            ? (field.defaultValue !== undefined ? Number(field.defaultValue) : null)
+            : Number(value);
+        } else if (field.type === "select") {
+          acc[field.key] = value === "" ? null : value;
+        } else {
+          acc[field.key] = value;
+        }
         return acc;
-      }
-      if (field.type === "number") {
-        acc[field.key] = value === "" || value === null || value === undefined
-          ? (field.defaultValue !== undefined ? Number(field.defaultValue) : null)
-          : Number(value);
-      } else if (field.type === "select") {
-        acc[field.key] = value === "" ? null : value;
-      } else {
-        acc[field.key] = value;
-      }
-      return acc;
-    }, {} as Record<string, unknown>);
+      }, {} as Record<string, unknown>)
+    };
 
     const result = isEditing && editingId !== null
       ? await supabase.from(table as any).update(payload).eq("id", editingId).select("id").single()

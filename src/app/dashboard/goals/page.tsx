@@ -17,6 +17,7 @@ type Goal = {
   target_date: string | null;
   icon: string | null;
   account_id: string | null;
+  couple_id: string | null;
   accounts?: Account | null; // Joined account for balance
 };
 
@@ -27,6 +28,10 @@ export default function GoalsPage() {
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Couple support state
+  const [coupleId, setCoupleId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"personal" | "couple">("personal");
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,14 +56,43 @@ export default function GoalsPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Check couple link on load
+  useEffect(() => {
+    async function checkCouple() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("couple_members")
+        .select("couple_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setCoupleId(data.couple_id);
+      }
+    }
+    checkCouple();
+  }, [supabase]);
+
   async function loadData() {
     setLoading(true);
+    setError(null);
     
-    // Fetch goals with their linked accounts
-    const { data: goalsData, error: goalsError } = await supabase
+    // Fetch goals
+    let goalsQuery = supabase
       .from("goals")
       .select("*, accounts(id, name, balance)")
       .order("created_at", { ascending: false });
+
+    // Filter based on active tab
+    if (coupleId && activeTab === "couple") {
+      goalsQuery = goalsQuery.eq("couple_id", coupleId);
+    } else {
+      goalsQuery = goalsQuery.is("couple_id", null);
+    }
+
+    const { data: goalsData, error: goalsError } = await goalsQuery;
 
     if (goalsError) {
       setError(goalsError.message);
@@ -66,7 +100,7 @@ export default function GoalsPage() {
       setGoals(goalsData as unknown as Goal[]);
     }
 
-    // Fetch active accounts for transfer source/destination
+    // Fetch active accounts for transfer source/destination (includes personal and shared)
     const { data: accountsData } = await supabase
       .from("accounts")
       .select("id, name, balance")
@@ -84,26 +118,30 @@ export default function GoalsPage() {
     setLoading(false);
   }
 
+  // Reload when activeTab or coupleId changes
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activeTab, coupleId]);
 
   async function handleCreateGoal(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
+    const isShared = coupleId && activeTab === "couple";
+
     try {
       // 1. Create Savings Account
       const { data: accData, error: accError } = await supabase
         .from("accounts")
         .insert([{
-          name: `🎯 ออม: ${createForm.name}`,
+          name: `${isShared ? "💖 " : "🎯 "}ออม: ${createForm.name}`,
           type: "savings",
           initial_balance: 0,
           balance: 0,
-          is_active: true
+          is_active: true,
+          couple_id: isShared ? coupleId : null // set couple_id if shared savings
         }])
         .select("id")
         .single();
@@ -118,7 +156,8 @@ export default function GoalsPage() {
           target_amount: Number(createForm.target_amount),
           target_date: createForm.target_date || null,
           icon: createForm.icon || "🎯",
-          account_id: accData.id
+          account_id: accData.id,
+          couple_id: isShared ? coupleId : null // link to couple
         }]);
 
       if (goalError) throw goalError;
@@ -162,7 +201,7 @@ export default function GoalsPage() {
 
       if (txError) throw txError;
 
-      // We also need to log this in goal_transactions (optional, but good for history)
+      // We also need to log this in goal_transactions
       await supabase.from("goal_transactions").insert([{
         goal_id: selectedGoal.id,
         amount: txType === "deposit" ? amountNum : -amountNum,
@@ -183,8 +222,7 @@ export default function GoalsPage() {
     if (!confirm("คุณต้องการลบเป้าหมายนี้ใช่หรือไม่? (บัญชีออมเงินที่เกี่ยวข้องจะถูกเก็บไว้เป็นบัญชีปกติ)")) return;
     
     setLoading(true);
-    // Note: We only delete the goal. The user can manually delete the account if they want, 
-    // or we could also delete it here if balance is 0. Let's keep it safe.
+    
     const { error: delError } = await supabase.from("goals").delete().eq("id", id);
     
     if (delError) {
@@ -217,6 +255,52 @@ export default function GoalsPage() {
         </button>
       </div>
 
+      {coupleId && (
+        <div style={{
+          display: "flex",
+          background: "rgba(15, 32, 67, 0.4)",
+          padding: "6px",
+          borderRadius: "12px",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          width: "fit-content",
+          alignSelf: "center",
+          marginBottom: "20px"
+        }}>
+          <button
+            onClick={() => setActiveTab("personal")}
+            style={{
+              background: activeTab === "personal" ? "linear-gradient(135deg, #4f8cff, #38bdf8)" : "transparent",
+              color: activeTab === "personal" ? "#ffffff" : "var(--text-secondary)",
+              border: "none",
+              padding: "8px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            👤 เป้าหมายส่วนตัว
+          </button>
+          <button
+            onClick={() => setActiveTab("couple")}
+            style={{
+              background: activeTab === "couple" ? "linear-gradient(135deg, #4f8cff, #38bdf8)" : "transparent",
+              color: activeTab === "couple" ? "#ffffff" : "var(--text-secondary)",
+              border: "none",
+              padding: "8px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            💖 เป้าหมายร่วม (คู่รัก)
+          </button>
+        </div>
+      )}
+
       {error && <div style={{ color: '#ff6580', marginBottom: '1rem', padding: '1rem', background: 'rgba(255,101,128,0.1)', borderRadius: '8px' }}>{error}</div>}
 
       {loading ? (
@@ -225,7 +309,9 @@ export default function GoalsPage() {
         <div className={styles.grid}>
           {goals.length === 0 ? (
             <div className={styles.emptyState}>
-              ยังไม่มีเป้าหมายการออม ลองสร้างเป้าหมายแรกของคุณดูสิ!
+              {activeTab === "couple" 
+                ? "ยังไม่มีเป้าหมายร่วมกัน ลองสร้างเป้าหมายคู่รักเป้าแรกดูสิ!" 
+                : "ยังไม่มีเป้าหมายการออม ลองสร้างเป้าหมายแรกของคุณดูสิ!"}
             </div>
           ) : (
             goals.map((goal) => {
@@ -287,7 +373,7 @@ export default function GoalsPage() {
       {isCreateModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
-            <h2>สร้างเป้าหมายการออม</h2>
+            <h2>{activeTab === "couple" ? "สร้างเป้าหมายร่วม (คู่รัก)" : "สร้างเป้าหมายการออม"}</h2>
             <form onSubmit={handleCreateGoal}>
               <div className={styles.formGroup}>
                 <label>ชื่อเป้าหมาย</label>

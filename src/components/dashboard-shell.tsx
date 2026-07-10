@@ -29,6 +29,7 @@ import {
   Shield,
   History,
   RefreshCw,
+  Heart,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -75,6 +76,7 @@ const menuGroups: MenuGroup[] = [
   {
     title: "อื่นๆ",
     items: [
+      { label: "โหมดคู่รัก", href: "/dashboard/couple", icon: Heart },
       { label: "แจ้งเตือน", href: "/dashboard/alerts", icon: Bell },
       { label: "LINE Bot", href: "/dashboard/line", icon: MessageSquare },
       { label: "ประวัติกิจกรรม", href: "/dashboard/audit-logs", icon: History },
