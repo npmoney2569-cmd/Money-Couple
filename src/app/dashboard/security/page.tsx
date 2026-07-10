@@ -58,6 +58,19 @@ export default function SecurityPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
+      
+      // Parse URL parameters
+      const params = new URLSearchParams(window.location.search);
+      const urlErr = params.get("error");
+      const urlSuccess = params.get("success");
+      if (urlSuccess === "line_linked") {
+        setSuccessMsg("เชื่อมต่อบัญชี LINE ของคุณเรียบร้อยแล้ว!");
+      } else if (urlErr === "line_already_linked") {
+        setError("ไม่สามารถเชื่อมต่อได้: บัญชี LINE นี้ถูกเชื่อมต่อกับผู้ใช้รายอื่นแล้ว");
+      } else if (urlErr) {
+        setError(`การเชื่อมต่อล้มเหลว: ${urlErr}`);
+      }
+
       const { data: { user }, error: authErr } = await supabase.auth.getUser();
       if (authErr || !user) {
         setError("ไม่พบผู้ใช้ที่เข้าสู่ระบบ");
@@ -83,6 +96,13 @@ export default function SecurityPage() {
     }
     loadData();
   }, [supabase]);
+
+  function handleLinkLine() {
+    const clientId = "2010660050";
+    const redirectUri = encodeURIComponent(window.location.origin + "/auth/line/callback");
+    const state = "link_account";
+    window.location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`;
+  }
 
   async function handleUnlink(provider: AuthProvider) {
     if (providers.length <= 1) {
@@ -190,6 +210,14 @@ export default function SecurityPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!loading && !providers.some(p => p.provider === "line") && (
+          <div style={{ marginTop: "1.5rem" }}>
+            <button onClick={handleLinkLine} className={styles.linkLineBtn}>
+              💚 เชื่อมต่อกับบัญชี LINE
+            </button>
           </div>
         )}
       </section>

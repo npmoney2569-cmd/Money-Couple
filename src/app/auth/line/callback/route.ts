@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -63,6 +64,10 @@ export async function GET(request: NextRequest) {
     }
 
     const supabaseAdmin = createAdminClient();
+    
+    // Check if user is already logged in locally
+    const supabaseUserClient = await createClient();
+    const { data: { user: currentUser } } = await supabaseUserClient.auth.getUser();
 
     // 3. Check if this LINE User ID is already linked to an account
     const { data: providerData, error: providerError } = await supabaseAdmin
@@ -74,6 +79,33 @@ export async function GET(request: NextRequest) {
 
     if (providerError) {
       console.error("Failed to query auth_providers:", providerError.message);
+    }
+
+    if (currentUser) {
+      // User is already logged in, they want to link this LINE account
+      if (providerData && providerData.user_id !== currentUser.id) {
+        // Already linked to someone else
+        return NextResponse.redirect(new URL("/dashboard/security?error=line_already_linked", request.url));
+      }
+
+      // Link to current user
+      const { error: linkError } = await supabaseAdmin
+        .from("auth_providers")
+        .upsert({
+          user_id: currentUser.id,
+          provider: "line",
+          provider_uid: lineUserId,
+          line_user_id: lineUserId,
+        }, {
+          onConflict: "provider,provider_uid",
+        });
+
+      if (linkError) {
+        console.error("Failed to link LINE in callback:", linkError.message);
+        return NextResponse.redirect(new URL("/dashboard/security?error=link_failed", request.url));
+      }
+
+      return NextResponse.redirect(new URL("/dashboard/security?success=line_linked", request.url));
     }
 
     let targetUserId = providerData?.user_id || null;

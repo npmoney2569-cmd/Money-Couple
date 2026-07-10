@@ -318,3 +318,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+.linkLineBtn {
+  background: #06c755;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2);
+}
+
+.linkLineBtn:hover {
+  opacity: 0.9;
+}
+
