@@ -15,7 +15,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const supabase = createClient();
   const ENABLE_GOOGLE_OAUTH = false;
-  const ENABLE_LINE_OAUTH = false; // Phase 3 — ทำทีหลังสุด
+  const ENABLE_LINE_OAUTH = true; // Phase 3 — ทำทีหลังสุด
   const [identifier, setIdentifier] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

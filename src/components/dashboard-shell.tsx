@@ -99,8 +99,13 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <span className={styles.brandTitle}>Money Couple</span>
-          <span className={styles.brandSub}>บัญชีง่าย ชีวิตสบาย</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img src="/LOGO.png" alt="Logo" style={{ height: 32, width: "auto", borderRadius: 6 }} />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span className={styles.brandTitle}>Money Couple</span>
+              <span className={styles.brandSub}>บัญชีง่าย ชีวิตสบาย</span>
+            </div>
+          </div>
         </div>
 
         {menuGroups.map((group) => (

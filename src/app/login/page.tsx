@@ -13,7 +13,10 @@ export default async function LoginPage({
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <h1 className={styles.title}>เข้าสู่ระบบ</h1>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 16 }}>
+          <img src="/LOGO.png" alt="Logo" style={{ height: 64, width: "auto", borderRadius: 12, marginBottom: 8 }} />
+        </div>
+        <h1 className={styles.title} style={{ textAlign: "center" }}>เข้าสู่ระบบ</h1>
         {justRegistered ? (
           <p className={styles.successBanner}>
             ✅ สมัครสมาชิกสำเร็จ! กรุณายืนยันอีเมลของคุณแล้วเข้าสู่ระบบได้เลย
