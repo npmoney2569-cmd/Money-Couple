@@ -9,7 +9,7 @@
 | Email + Password | MVP |
 | Google Login | MVP |
 | Apple Login | Phase 2 |
-| LINE Login | Phase 3 |
+| LINE Login | Phase 3 (เสร็จสิ้น) |
 
 ## ผูกช่องทางเพิ่มเติม (Account Linking)
 

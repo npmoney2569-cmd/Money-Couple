@@ -112,7 +112,7 @@
 ## Phase 3 — Couple Mode & LINE Bot & OAuth (ทำทีหลังสุด)
 
 - [ ] Google Login (OAuth) — เปิด `ENABLE_GOOGLE_OAUTH = true` หลังตั้งค่า Google Console
-- [ ] LINE Login (OAuth) — เปิด `ENABLE_LINE_OAUTH = true` หลังตั้งค่า LINE Developers
+- [x] LINE Login (OAuth) — พัฒนา Custom OAuth Callback และเปิดใช้งานเรียบร้อย
 - [ ] LINE Bot — Webhook, Parser แบบ Pattern
 - [ ] LINE Bot — บันทึกรายรับ-รายจ่าย, คำสั่งสรุป, แก้ไข/ลบ
 - [ ] โหมดคู่รัก — เชิญ, ยืนยัน, บัญชีกลาง
@@ -144,10 +144,10 @@
 ```
 Phase 1 (MVP Core):         ████████████████████▓░  ~95%
 Phase 2 (Extended):          ████░░░░░░░░░░░░░░░░░  ~20%
-Phase 3 (Couple+LINE+OAuth): ░░░░░░░░░░░░░░░░░░░░░   0%
-Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░░░░░   0%
+Phase 3 (Couple+LINE+OAuth): █░░░░░░░░░░░░░░░░░░░░   ~5%
+Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░░░░    0%
 ───────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:         ███████░░░░░░░░░░░░░░  ~35%
+ภาพรวมทั้งโปรเจกต์:         ███████░░░░░░░░░░░░░░  ~37%
 ```
 
 ---
@@ -168,5 +168,5 @@ Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░
 | แจ้งเตือน | ✅ ทำงานได้ | (ยังไม่มีการแจ้งเตือนอัตโนมัติ) |
 | ผู้ใช้งาน/ความปลอดภัย/ตั้งค่า | ✅ ทำงานได้ | - |
 | Google Login | ⛔ ซ่อนไว้ | Phase 3 ทำทีหลังสุด |
-| LINE Login | ⛔ ซ่อนไว้ | Phase 3 ทำทีหลังสุด |
+| LINE Login | ✅ ทำงานได้ | พัฒนา Custom OAuth Callback สำเร็จ |
 | LINE Bot | ❌ ยังไม่ทำ | Phase 3 |
