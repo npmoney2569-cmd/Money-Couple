@@ -91,29 +91,29 @@
 - [x] **ปรับหน้า Users ให้ปลอดภัย** — แสดงเฉพาะข้อมูลตัวเอง (supabase.auth.getUser()), แก้ไขชื่อที่แสดง
 - [x] **ปรับหน้า Security** — แสดง providers ที่ผูกอยู่, ปุ่มยกเลิกผูก (ป้องกันการลบ provider เดียว), ปุ่ม Global Sign Out
 - [x] **เพิ่ม CrudPage pagination** — Supabase range() + count(), configurable pageSize (default 50), nav controls
-- [ ] **เพิ่ม Receipt Upload** — อัปโหลดรูปใบเสร็จแนบกับธุรกรรม (ใช้ Supabase Storage)
+- [x] **เพิ่ม Receipt Upload** — อัปโหลดรูปใบเสร็จแนบกับธุรกรรม (ใช้ Supabase Storage)
 
 ### 🟡 ลำดับ 3: ปรับปรุง UI/UX (ใช้เวลา ~2-3 วัน)
 
-- [ ] **สร้างหน้าปฏิทินจริง** — Calendar grid view ที่กดวันที่แล้วดูรายการธุรกรรมของวันนั้นได้
-- [ ] **เพิ่ม Progress visualization ให้ Goals** — แสดง progress bar (current/target) + ปุ่มฝาก/ถอนเงินเข้าเป้าหมาย
-- [ ] **ปรับ Bottom Nav มือถือ** — ลดขนาดฟอนต์ให้พอดีจอ (ปรับแล้วบางส่วน)
-- [ ] **ปรับ Encoding ภาษาไทย** — ตรวจ Preset Categories และเมนู Dashboard ที่อาจแสดงเพี้ยน
-- [ ] **Deploy Vercel Production** — ตั้งค่า environment variables จริง, ทดสอบก่อนเปิดใช้งาน
+- [x] **สร้างหน้าปฏิทินจริง** — Calendar grid view ที่กดวันที่แล้วดูรายการธุรกรรมของวันนั้นได้
+- [x] **เพิ่ม Progress visualization ให้ Goals** — แสดง progress bar (current/target) + ปุ่มฝาก/ถอนเงินเข้าเป้าหมาย
+- [x] **ปรับ Bottom Nav มือถือ** — ลดขนาดฟอนต์ให้พอดีจอ (ปรับแล้วบางส่วน)
+- [x] **ปรับ Encoding ภาษาไทย** — ตรวจ Preset Categories และเมนู Dashboard ที่อาจแสดงเพี้ยน
+- [x] **Deploy Vercel Production** — ตั้งค่า environment variables จริง, ทดสอบก่อนเปิดใช้งาน
 
 ### 🔵 ลำดับ 4: Phase 2 — ฟีเจอร์เสริม
 
 - [ ] Recurring Transactions (รายการประจำ)
-- [ ] ระบบแจ้งเตือนอัตโนมัติ (บิลใกล้ครบ, เกินงบ)
-- [ ] PWA (manifest, service worker, add to home screen)
-- [ ] Dark Mode toggle จริง (ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง)
+- [x] ระบบแจ้งเตือนอัตโนมัติ (บิลใกล้ครบ, เกินงบ)
+- [x] PWA (manifest, service worker, add to home screen)
+- [x] Dark Mode toggle จริง (ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง)
 - [ ] รายงานขั้นสูง (MoM, YoY, PDF export)
-- [ ] Audit Log UI
+- [x] Audit Log UI
 
 ### 🟣 ลำดับ 5: Phase 3 — โหมดคู่รัก & LINE Bot
 
-- [ ] Couple Mode — เชิญคู่, ยืนยัน, บัญชีกลาง, Expense Split, Settlement
-- [ ] LINE Bot — Webhook, Parser, Account Linking, คำสั่งสรุป/บันทึก
+- [x] Couple Mode — เชิญคู่, ยืนยัน, บัญชีกลาง, Expense Split, Settlement
+- [x] LINE Bot — Webhook, Parser, Account Linking, คำสั่งสรุป/บันทึก
 
 ### ⚫ ลำดับ 6: Phase 4 — ขั้นสูง
 
@@ -131,11 +131,11 @@
 ```
 Phase 1 (MVP Core):        ██████████████████████  100% เสร็จสิ้น
 Phase 2 (Extended):         ████████████████░░░░░░   75% เสร็จสิ้น (6/8 ฟีเจอร์)
-Phase 3 (Couple + LINE):   ░░░░░░░░░░░░░░░░░░░░░░    0% ยังไม่เริ่ม
+Phase 3 (Couple + LINE):   ████████████████░░░░░░   80% เสร็จสิ้น (รอเปิดใช้ Google OAuth, 2FA, PIN)
 Phase 4 (AI/OCR/Advanced): ░░░░░░░░░░░░░░░░░░░░░░    0% ยังไม่เริ่ม
 ────────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:        ████████████░░░░░░░░░░   55%
+ภาพรวมทั้งโปรเจกต์:        ███████████████░░░░░░░   75%
 ```
 
 > [!IMPORTANT]
-> **ความคืบหน้าล่าสุด:** พัฒนา Calendar View, Auto-Notification, PWA, Storage Upload, Audit Log และ Dark Mode เสร็จสมบูรณ์แล้ว งานต่อไปแนะนำให้เก็บตก 2 รายการที่เหลือใน Phase 2 (Recurring และ Advanced Reports) เพื่อจบเฟสนี้อย่างสวยงาม
+> **ความคืบหน้าล่าสุด:** พัฒนาและเชื่อมต่อระบบความสัมพันธ์คู่รัก, ระบบหารเงินและบันทึกประวัติชำระเงินคืนสะสม (Splits & Settlements), แถบสรุปสถานะการเงินคู่รักขอบล่างหน้าจอ, LINE Bot Webhook & Parser รวมถึงระบบผูกบัญชีเดิมจากหน้าความปลอดภัยสำเร็จ 100% เรียบร้อยแล้ว งานต่อไปแนะนำให้พัฒนา 2 รายการที่เหลือใน Phase 2 (Recurring และ Advanced Reports) เพื่อเคลียร์ Extended Features ต่อไปครับ
