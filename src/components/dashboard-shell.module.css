@@ -218,3 +218,165 @@
     font-size: 11px;
   }
 }
+
+/* Couple Mode Bottom Bar */
+.coupleBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: linear-gradient(90deg, #09132e 0%, #060e24 50%, #08122a 100%);
+  border-top: 1px solid rgba(255, 101, 128, 0.25);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 24px;
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 1120px) {
+  .coupleBar {
+    display: none; /* Hide on mobile to avoid overlap with mobileNav */
+  }
+}
+
+.coupleSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coupleIconCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconHeart {
+  background: rgba(255, 101, 128, 0.15);
+  color: #ff6580;
+  border: 1px solid rgba(255, 101, 128, 0.3);
+}
+
+.iconHome {
+  background: rgba(79, 140, 255, 0.15);
+  color: #4f8cff;
+  border: 1px solid rgba(79, 140, 255, 0.3);
+}
+
+.iconDoc {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.iconTarget {
+  background: rgba(45, 227, 168, 0.15);
+  color: #2ee3a8;
+  border: 1px solid rgba(45, 227, 168, 0.3);
+}
+
+.coupleMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.coupleLabel {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coupleValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.coupleLink {
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.coupleLink:hover {
+  opacity: 0.8;
+}
+
+/* User Progress indicators */
+.coupleProgressBox {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.userProgressItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+
+.userMiniAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #4f8cff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.partnerMiniAvatar {
+  background: #ff6580;
+}
+
+.progressBarContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.progressLabel {
+  font-size: 10px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+.progressLabelName {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.progressBarTrack {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBarFillUser {
+  height: 100%;
+  background: #4f8cff;
+}
+
+.progressBarFillPartner {
+  height: 100%;
+  background: #ff6580;
+}
+
