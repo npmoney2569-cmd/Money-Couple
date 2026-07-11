@@ -1,141 +1,142 @@
-# รายงานตรวจสอบโปรเจกต์ Money Couple (CMN) ฉบับสมบูรณ์
+# บันทึกสถานะและแผนงาน — Money Couple (CMN)
 
-อัปเดต: 2026-07-08
+> อัปเดตล่าสุด: 2026-07-11
 
 ---
 
-## ภาพรวมโปรเจกต์
+## 📊 ภาพรวมโปรเจกต์
 
 | รายการ | รายละเอียด |
 |---|---|
 | **Tech Stack** | Next.js 15, React 19, TypeScript, Supabase |
 | **ไฟล์โค้ดทั้งหมด** | ~54 ไฟล์ (40 ใน src/app + 10 components + 4 lib) |
 | **ฐานข้อมูล** | 21 ตาราง + RLS policies ครบ + Trigger อัปเดตยอดคงเหลือ |
-| **Scripts** | 18 ไฟล์ (10 SQL + 8 MJS) |
-| **Build / Lint / TypeCheck** | ✅ ผ่านทั้งหมด |
-| **Deploy** | Vercel (cmn-money-couple.vercel.app) — ใช้งานได้แต่ยังไม่ปรับ Production เต็มรูปแบบ |
+| **Scripts** | 28 ไฟล์ (SQL + MJS) |
+| **Build / Lint / TypeCheck** | ✅ ผ่านทั้งหมด (Next.js 15.5.20, 40 routes, 0 TS errors) |
+| **Deploy** | Vercel (cmn-money-couple.vercel.app) — ใช้งานได้จริง |
+
+### ความคืบหน้าภาพรวม
+
+```
+Phase 1 (MVP Core):          ██████████████████████  100% เสร็จสิ้น
+Phase 2 (Extended Features): █████████████████████░   95% (รอ PDF export)
+Phase 3 (Couple + LINE):     █████████████████░░░░░   85% (รอ Google OAuth, 2FA, PIN)
+Phase 4 (AI/OCR/Advanced):   ░░░░░░░░░░░░░░░░░░░░░░    0% ยังไม่เริ่ม
+──────────────────────────────────────────────────────
+ภาพรวมทั้งโปรเจกต์:          ████████████████░░░░░░  ~80%
+```
 
 ---
 
-## สถานะแต่ละโมดูล (ละเอียด)
+## 🟢 สถานะโมดูลทั้งหมด
 
-### ✅ ใช้งานได้จริง (16 หน้า)
+### ✅ Phase 1 — Core Finance (ใช้งานได้ทั้งหมด)
 
-| หน้า | ประเภท | สถานะ | หมายเหตุ |
-|---|---|---|---|
-| **Dashboard** | Custom Server | ✅ ทำงานจริง | KPI 6 ตัว, กราฟ SVG แนวโน้ม 6 เดือน, สัดส่วนรายจ่าย, รายการล่าสุด |
-| **รายรับ** | CrudPage | ✅ ทำงานจริง | CRUD + เชื่อมหมวดหมู่/บัญชี/แท็ก |
-| **รายจ่าย** | CrudPage | ✅ ทำงานจริง | CRUD + เชื่อมหมวดหมู่/บัญชี/แท็ก |
-| **โอนเงิน** | CrudPage | ✅ ทำงานจริง | CRUD + Trigger อัปเดตยอดคงเหลือ |
-| **บัญชี** | CrudPage | ✅ ทำงานจริง | รองรับ 5 ประเภท (เงินสด/ธนาคาร/บัตรเครดิต/e-Wallet/ลงทุน) |
-| **หมวดหมู่** | CrudPage | ✅ ทำงานจริง | Preset + Custom, แยกรายรับ/รายจ่าย |
-| **แท็ก** | CrudPage | ✅ ทำงานจริง | CRUD + เชื่อมกับ transaction_tags |
-| **งบประมาณ** | CrudPage | ✅ ทำงานจริง | ตั้งงบรายวัน/สัปดาห์/เดือน/ปี + Progress bar |
-| **เป้าหมายการออม** | CrudPage | ⚠️ มีบั๊ก | `current_amount` not-null constraint error ตอนสร้าง |
-| **หนี้สิน** | CrudPage | ✅ ทำงานจริง | CRUD + ดอกเบี้ย/งวดผ่อน |
-| **สินทรัพย์** | CrudPage | ✅ ทำงานจริง | 6 ประเภท + ค่าเสื่อม/ราคาซื้อ |
-| **บิล/Subscription** | CrudPage | ✅ ทำงานจริง | CRUD + วันครบกำหนด + เตือนก่อนกี่วัน |
-| **Split Transaction** | Custom Client | ✅ ทำงานจริง | คำนวณยอดคงเหลือ real-time |
-| **รายงาน** | Custom Server | ✅ ทำงานจริง | สรุปรายเดือน + กราฟรายวัน + Export CSV |
-| **ค้นหา/กรอง** | Custom Client | ✅ ทำงานจริง | ค้นหา keyword/ประเภท/วันที่/หมวด/บัญชี/จำนวน/แท็ก |
-| **ตั้งค่า** | Custom Client | ✅ ทำงานจริง | โปรไฟล์/ภาษา/สกุลเงิน/ธีม/เปลี่ยนรหัสผ่าน |
-
-### ⚠️ โครงหน้า (Read-Only / ยังไม่มีฟังก์ชันจริง — 5 หน้า)
-
-| หน้า | ปัญหา | สิ่งที่ขาด |
+| หน้า | ประเภท | หมายเหตุ |
 |---|---|---|
-| **ปฏิทิน** | แสดงเป็นตารางธุรกรรมเรียงวัน ไม่ใช่ Calendar view | ต้องทำ UI ปฏิทินจริง (กดวันที่ดูรายการ) |
-| **แจ้งเตือน** | แสดงข้อมูลจากตาราง notifications เท่านั้น | ไม่มีระบบสร้างแจ้งเตือนอัตโนมัติ, ไม่มีปุ่มอ่านแล้ว |
-| **LINE Bot** | แสดงธุรกรรมที่ source=line_bot เท่านั้น | ไม่มี Webhook, Parser, การผูกบัญชี LINE |
-| **ผู้ใช้งาน** | แสดงตาราง users แบบ read-only | ไม่มีจัดการผู้ใช้, อาจแสดงข้อมูลคนอื่นได้ |
-| **ความปลอดภัย** | แสดงตาราง auth_providers เท่านั้น | ไม่มี 2FA, PIN Lock, Session Management |
+| **Dashboard** | Custom Server | KPI 6 ตัว, กราฟ SVG แนวโน้ม 6 เดือน, สัดส่วนรายจ่าย, รายการล่าสุด |
+| **รายรับ** | CrudPage | CRUD + เชื่อมหมวดหมู่/บัญชี/แท็ก + Pagination 50/หน้า |
+| **รายจ่าย** | CrudPage | CRUD + เชื่อมหมวดหมู่/บัญชี/แท็ก + Pagination |
+| **โอนเงิน** | CrudPage | CRUD + Trigger อัปเดตยอดคงเหลือ |
+| **บัญชี** | CrudPage | รองรับ 5 ประเภท (เงินสด/ธนาคาร/บัตรเครดิต/e-Wallet/ลงทุน) |
+| **หมวดหมู่** | CrudPage | Preset + Custom, แยกรายรับ/รายจ่าย |
+| **แท็ก** | CrudPage | CRUD + เชื่อมกับ transaction_tags |
+| **งบประมาณ** | CrudPage | ตั้งงบรายวัน/สัปดาห์/เดือน/ปี + Progress bar + แจ้งเตือนอัตโนมัติ |
+| **เป้าหมายการออม** | Custom Client | CRUD + ปุ่มฝาก/ถอน + sync goals.current_amount |
+| **หนี้สิน** | CrudPage | CRUD + ดอกเบี้ย/งวดผ่อน |
+| **สินทรัพย์** | CrudPage | 6 ประเภท + ค่าเสื่อม/ราคาซื้อ |
+| **บิล/Subscription** | CrudPage | CRUD + วันครบกำหนด + เตือนก่อนกี่วัน |
+| **ตั้งค่า** | Custom Client | โปรไฟล์/ภาษา/สกุลเงิน/ธีม/เปลี่ยนรหัสผ่าน |
 
-### ❌ ยังไม่ได้เริ่มทำ
+### ✅ Phase 2 — Extended Features (ใช้งานได้ 95%)
 
-| ฟีเจอร์ | เฟส |
+| หน้า | ประเภท | หมายเหตุ |
+|---|---|---|
+| **ปฏิทิน** | Custom Client | Calendar Grid จริง + กดวันที่ดู Popup รายการ + ยอดรับ/จ่ายรายวัน |
+| **แจ้งเตือน** | Custom Client | mark read/all, filter unread, delete, badge count |
+| **รายการประจำ** | Custom Client | CRUD daily/weekly/monthly/yearly + "ประมวลผลวันนี้" → สร้าง transaction จริง |
+| **รายงาน** | Custom Server | MoM + YoY + กราฟรายวัน + หมวดรายจ่าย + Export CSV + Export ช่วง + Print |
+| **Audit Log** | Custom Server | บันทึกประวัติ CRUD ลงตาราง audit_logs อัตโนมัติ |
+| **ค้นหา/กรอง** | Custom Client | keyword/ประเภท/วันที่/หมวด/บัญชี/จำนวน/แท็ก |
+| **Split Transaction** | Custom Client | คำนวณสัดส่วนหารเงิน manual (standalone) |
+| **PWA** | Web App | manifest.json + Service Worker + Add to Home Screen |
+| **รายงาน PDF** | — | ⏳ ยังไม่ทำ |
+
+### ✅ Phase 3 — Couple Mode + LINE Bot (ใช้งานได้ 85%)
+
+| ฟีเจอร์ | หมายเหตุ |
 |---|---|
-| PWA (manifest, service worker, offline) | Phase 2 |
-| Recurring Transactions UI | Phase 2 |
-| โหมดคู่รัก (Couple Mode) | Phase 3 |
-| LINE Bot (Webhook/Parser) | Phase 3 |
-| OCR ใบเสร็จ | Phase 4 |
-| AI จัดหมวดหมู่ / วิเคราะห์ | Phase 4 |
-| Multi Currency | Phase 4 |
-| Import Statement ธนาคาร | Phase 4 |
+| **Couple Hub Dashboard** | แสดง 3 คอลัมน์: บัญชีฉัน / บัญชีแฟน / บัญชีกลาง |
+| **เชิญ/ยืนยันคู่รัก** | ส่ง invite → ยืนยัน → Accept ด้วย RPC |
+| **Auto-create บัญชีกลาง** | ตอน Accept invite → สร้าง `บัญชีกลางคู่รัก 💖` อัตโนมัติ ✅ Applied 2026-07-11 |
+| **Expense Split** | หาร 50/50 หรือ % กำหนดเอง + บันทึกประวัติ |
+| **Settlement** | โอนเงินคืนระหว่างคู่ + คำนวณยอดค้างสุทธิ |
+| **Couple Reports** | หมวดรายจ่ายร่วม + สัดส่วนแต่ละคน |
+| **สลายคู่รัก** | ปุ่ม 💔 + ยืนยัน + ลบ couples row |
+| **LINE Bot Webhook** | Webhook endpoint + Pattern Parser + บันทึก/สรุป/ลบ ผ่าน LINE Chat |
+| **LINE Login OAuth** | Custom OAuth Callback ✅ |
+| **Google Login** | ⏸️ ซ่อนไว้ รอเปิด ENABLE_GOOGLE_OAUTH=true |
+| **2FA / PIN Lock** | ❌ ยังไม่ทำ |
+
+### ❌ Phase 4 — ยังไม่เริ่มเลย
+
+| ฟีเจอร์ |
+|---|
+| OCR ใบเสร็จ |
+| AI จัดหมวดหมู่ + วิเคราะห์การเงิน |
+| Multi Currency |
+| Import Statement ธนาคาร (CSV/Excel) |
+| Financial Health Score / Gamification |
 
 ---
 
-## 🐛 บั๊กที่พบและต้องแก้ไข
+## 🐛 บั๊กที่แก้แล้ว (ทั้งหมด)
 
-| # | บั๊ก | ความรุนแรง | ไฟล์ที่เกี่ยวข้อง |
-|---|---|---|---|
-| 1 | **Goals: `current_amount` not-null constraint** — สร้างเป้าหมายใหม่ไม่ได้ | 🔴 สูง | `goals/page.tsx` — ต้องเพิ่ม default value `0` ให้ field `current_amount` |
-| 2 | **Reports: account_id แสดงเป็น UUID** — ไม่แสดงชื่อบัญชี | 🟡 ปานกลาง | `reports/page.tsx` — ต้องสร้าง accountMap เหมือน categoryMap |
-| 3 | **Reports: ตัวแปร `averageDailyExpense` และ `incomeCoverage` คำนวณแล้วไม่ได้แสดง** | 🟢 เล็กน้อย | `reports/page.tsx` — dead code |
-| 4 | **CrudPage: ไม่มี pagination** — limit(200) อาจช้าเมื่อข้อมูลเยอะ | 🟡 ปานกลาง | `crud-page.tsx` |
-| 5 | **Users page: อาจแสดงข้อมูลผู้ใช้คนอื่น** (ขึ้นอยู่กับ RLS) | 🟡 ปานกลาง | `users/page.tsx` + RLS policy |
-
----
-
-## 📋 สิ่งที่ต้องทำต่อ (เรียงตามลำดับความสำคัญ)
-
-### 🔴 ลำดับ 1: แก้บั๊กเร่งด่วน (ใช้เวลา ~1-2 ชม.)
-
-- [x] **แก้ Goals not-null bug** — เพิ่ม `defaultValue: "0"` ให้ field `current_amount` ใน `goals/page.tsx` + เพิ่ม `defaultValue` support ใน `CrudPage`
-- [x] **แก้ Reports account_id UUID** — สร้าง accountMap แล้ว resolve ชื่อบัญชีแทน UUID ใน `reports/page.tsx`
-- [x] **แสดง dead code ใน Reports** — เพิ่ม stat cards แสดง `averageDailyExpense` (รายจ่ายเฉลี่ย/วัน) และ `incomeCoverage` (สัดส่วนรายจ่าย/รายรับ)
-
-### 🟠 ลำดับ 2: ปิดช่องว่าง MVP (ใช้เวลา ~1-2 วัน)
-
-- [x] **ปรับหน้า Alerts ให้ใช้งานได้** — เพิ่มปุ่ม "อ่านแล้ว" (mark as read), กรอง unread, ลบการแจ้งเตือน, แสดงจำนวนที่ยังไม่อ่าน
-- [x] **ปรับหน้า Users ให้ปลอดภัย** — แสดงเฉพาะข้อมูลตัวเอง (supabase.auth.getUser()), แก้ไขชื่อที่แสดง
-- [x] **ปรับหน้า Security** — แสดง providers ที่ผูกอยู่, ปุ่มยกเลิกผูก (ป้องกันการลบ provider เดียว), ปุ่ม Global Sign Out
-- [x] **เพิ่ม CrudPage pagination** — Supabase range() + count(), configurable pageSize (default 50), nav controls
-- [x] **เพิ่ม Receipt Upload** — อัปโหลดรูปใบเสร็จแนบกับธุรกรรม (ใช้ Supabase Storage)
-
-### 🟡 ลำดับ 3: ปรับปรุง UI/UX (ใช้เวลา ~2-3 วัน)
-
-- [x] **สร้างหน้าปฏิทินจริง** — Calendar grid view ที่กดวันที่แล้วดูรายการธุรกรรมของวันนั้นได้
-- [x] **เพิ่ม Progress visualization ให้ Goals** — แสดง progress bar (current/target) + ปุ่มฝาก/ถอนเงินเข้าเป้าหมาย
-- [x] **ปรับ Bottom Nav มือถือ** — ลดขนาดฟอนต์ให้พอดีจอ (ปรับแล้วบางส่วน)
-- [x] **ปรับ Encoding ภาษาไทย** — ตรวจ Preset Categories และเมนู Dashboard ที่อาจแสดงเพี้ยน
-- [x] **Deploy Vercel Production** — ตั้งค่า environment variables จริง, ทดสอบก่อนเปิดใช้งาน
-
-### 🔵 ลำดับ 4: Phase 2 — ฟีเจอร์เสริม
-
-- [ ] Recurring Transactions (รายการประจำ)
-- [x] ระบบแจ้งเตือนอัตโนมัติ (บิลใกล้ครบ, เกินงบ)
-- [x] PWA (manifest, service worker, add to home screen)
-- [x] Dark Mode toggle จริง (ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง)
-- [ ] รายงานขั้นสูง (MoM, YoY, PDF export)
-- [x] Audit Log UI
-
-### 🟣 ลำดับ 5: Phase 3 — โหมดคู่รัก & LINE Bot
-
-- [x] Couple Mode — เชิญคู่, ยืนยัน, บัญชีกลาง, Expense Split, Settlement
-- [x] LINE Bot — Webhook, Parser, Account Linking, คำสั่งสรุป/บันทึก
-
-### ⚫ ลำดับ 6: Phase 4 — ขั้นสูง
-
-- [ ] OCR ใบเสร็จ
-- [ ] AI จัดหมวดหมู่ + วิเคราะห์การเงิน
-- [ ] Multi Currency
-- [ ] Import Statement ธนาคาร (CSV/Excel)
-- [ ] Financial Health Score
-- [ ] Gamification
+| # | บั๊ก | สถานะ |
+|---|---|---|
+| 1 | Goals: `current_amount` not-null constraint error ตอนสร้าง | ✅ แก้แล้ว |
+| 2 | Reports: account_id แสดงเป็น UUID แทนชื่อบัญชี | ✅ แก้แล้ว (accountMap) |
+| 3 | Reports: dead code `averageDailyExpense`/`incomeCoverage` ไม่แสดง | ✅ เพิ่ม stat cards แล้ว |
+| 4 | CrudPage: ไม่มี pagination, limit(200) | ✅ ใช้ Supabase range() + count(), pageSize=50 |
+| 5 | Users page: อาจแสดงข้อมูลผู้ใช้คนอื่น | ✅ ใช้ supabase.auth.getUser() + RLS |
+| 6 | Alerts: notification type `goal_achieved` ≠ `goal_reached` (DB) | ✅ แก้แล้ว 2026-07-11 |
+| 7 | Couple: บัญชีส่วนตัว `💖 ออม: test2` ถูก mark เป็น couple_id | ✅ cleanup แล้ว 2026-07-11 |
 
 ---
 
-## สรุปความคืบหน้า
+## 📋 สิ่งที่ต้องทำต่อ (เหลือ)
 
-```
-Phase 1 (MVP Core):        ██████████████████████  100% เสร็จสิ้น
-Phase 2 (Extended):         ████████████████░░░░░░   75% เสร็จสิ้น (6/8 ฟีเจอร์)
-Phase 3 (Couple + LINE):   ████████████████░░░░░░   80% เสร็จสิ้น (รอเปิดใช้ Google OAuth, 2FA, PIN)
-Phase 4 (AI/OCR/Advanced): ░░░░░░░░░░░░░░░░░░░░░░    0% ยังไม่เริ่ม
-────────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:        ███████████████░░░░░░░   75%
+### 🟠 Phase 2 — รอทำ 1 อย่าง
+
+- [ ] **รายงาน PDF Export** — ใช้ `window.print()` + print.css หรือ library เช่น jsPDF
+
+### 🟡 Phase 3 — รอทำ 3 อย่าง
+
+- [ ] **Google Login** — เปิด `ENABLE_GOOGLE_OAUTH=true` ใน .env + Supabase provider
+- [ ] **2FA** — TOTP via supabase auth
+- [ ] **PIN Lock / Biometric** — localStorage PIN hash + prompt on session
+
+---
+
+## 🧪 วิธีทดสอบหลังย้ายเครื่อง
+
+```bash
+# 1. ติดตั้ง dependencies
+npm install
+
+# 2. ตรวจสอบ .env.local (NEXT_PUBLIC_SUPABASE_URL, ANON_KEY, DATABASE_URL, DIRECT_URL)
+
+# 3. Build check
+npm run build
+
+# 4. Dev server
+npm run dev  # http://localhost:3008
+
+# 5. ทดสอบ Couple Hub
+# Login test1@cmn.com → /dashboard/couple → ส่ง invite → Login test2@cmn.com → รับ invite
+# ยืนยันบัญชีกลาง "บัญชีกลางคู่รัก 💖" ถูกสร้าง
 ```
 
-> [!IMPORTANT]
-> **ความคืบหน้าล่าสุด:** พัฒนาและเชื่อมต่อระบบความสัมพันธ์คู่รัก, ระบบหารเงินและบันทึกประวัติชำระเงินคืนสะสม (Splits & Settlements), แถบสรุปสถานะการเงินคู่รักขอบล่างหน้าจอ, LINE Bot Webhook & Parser รวมถึงระบบผูกบัญชีเดิมจากหน้าความปลอดภัยสำเร็จ 100% เรียบร้อยแล้ว งานต่อไปแนะนำให้พัฒนา 2 รายการที่เหลือใน Phase 2 (Recurring และ Advanced Reports) เพื่อเคลียร์ Extended Features ต่อไปครับ
+---
+
+> **ดู Roadmap ละเอียด:** [`docs/09-mvp-roadmap.md`](file:///d:/CMN/CMN/docs/09-mvp-roadmap.md)

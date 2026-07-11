@@ -16,7 +16,8 @@ type Notification = {
 const TYPE_LABELS: Record<string, string> = {
   budget_exceeded: "เกินงบประมาณ",
   bill_due: "บิลใกล้ครบ",
-  goal_achieved: "บรรลุเป้าหมาย",
+  goal_reached: "บรรลุเป้าหมาย",
+  debt_due: "หนี้ครบกำหนด",
   system: "ระบบ",
   info: "ข้อมูล",
 };
@@ -24,7 +25,8 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_COLORS: Record<string, string> = {
   budget_exceeded: "#ff6580",
   bill_due: "#ffa756",
-  goal_achieved: "#2ee3a8",
+  goal_reached: "#2ee3a8",
+  debt_due: "#a78bfa",
   system: "#4f8cff",
   info: "#a9c2ff",
 };

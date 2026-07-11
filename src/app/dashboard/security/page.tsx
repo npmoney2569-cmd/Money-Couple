@@ -58,17 +58,23 @@ export default function SecurityPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      
-      // Parse URL parameters
+
+      // อ่าน URL params แล้วล้างทันที ป้องกัน state ค้างตอน refresh
       const params = new URLSearchParams(window.location.search);
       const urlErr = params.get("error");
       const urlSuccess = params.get("success");
+      if (urlErr || urlSuccess) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+
       if (urlSuccess === "line_linked") {
-        setSuccessMsg("เชื่อมต่อบัญชี LINE ของคุณเรียบร้อยแล้ว!");
+        setSuccessMsg("✅ เชื่อมต่อบัญชี LINE เรียบร้อยแล้ว!");
       } else if (urlErr === "line_already_linked") {
-        setError("ไม่สามารถเชื่อมต่อได้: บัญชี LINE นี้ถูกเชื่อมต่อกับผู้ใช้รายอื่นแล้ว");
+        setError("❌ บัญชี LINE นี้ถูกเชื่อมต่อกับผู้ใช้รายอื่นแล้ว");
+      } else if (urlErr === "link_failed") {
+        setError("❌ บันทึกการเชื่อมต่อล้มเหลว กรุณาลองใหม่");
       } else if (urlErr) {
-        setError(`การเชื่อมต่อล้มเหลว: ${urlErr}`);
+        setError(`❌ การเชื่อมต่อล้มเหลว: ${urlErr}`);
       }
 
       const { data: { user }, error: authErr } = await supabase.auth.getUser();

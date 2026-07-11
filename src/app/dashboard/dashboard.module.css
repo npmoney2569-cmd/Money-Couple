@@ -27,7 +27,7 @@
 
 .kpiValue {
   margin: 6px 0 4px;
-  font-size: clamp(15px, 3.5vw, 30px);
+  font-size: clamp(13px, 1.4vw, 22px);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -185,9 +185,18 @@
   color: #aac4f8;
 }
 
+@media (max-width: 1600px) {
+  .kpiValue {
+    font-size: clamp(12px, 1.2vw, 18px);
+  }
+}
+
 @media (max-width: 1440px) {
   .kpiRow {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .kpiValue {
+    font-size: clamp(14px, 2vw, 24px);
   }
 }
 

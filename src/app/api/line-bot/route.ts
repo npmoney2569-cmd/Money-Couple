@@ -10,7 +10,7 @@ function getThDate(): Date {
 }
 
 // Helper to reply back to LINE user
-async function replyMessage(replyToken: string, text: string) {
+async function replyMessage(replyToken: string, text: string, quickReplyItems?: any[]) {
   const channelAccessToken = process.env.LINE_BOT_CHANNEL_ACCESS_TOKEN || "";
   if (!channelAccessToken) {
     console.error("LINE BOT: Missing LINE_BOT_CHANNEL_ACCESS_TOKEN. Cannot reply.");
@@ -18,6 +18,17 @@ async function replyMessage(replyToken: string, text: string) {
   }
 
   try {
+    const messageObj: any = {
+      type: "text",
+      text: text,
+    };
+
+    if (quickReplyItems && quickReplyItems.length > 0) {
+      messageObj.quickReply = {
+        items: quickReplyItems,
+      };
+    }
+
     const response = await fetch("https://api.line.me/v2/bot/message/reply", {
       method: "POST",
       headers: {
@@ -26,12 +37,7 @@ async function replyMessage(replyToken: string, text: string) {
       },
       body: JSON.stringify({
         replyToken,
-        messages: [
-          {
-            type: "text",
-            text: text,
-          },
-        ],
+        messages: [messageObj],
       }),
     });
 
@@ -244,6 +250,115 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      // Command E: Confirm Pending Account Select e.g., "เลือกบัญชี: บัญชีเงินฝากออมทรัพย์"
+      const accountMatch = userMessage.match(/^(?:เลือกบัญชี|บันทึกเข้าบัญชี)[:\s]+(.+)$/i);
+      if (accountMatch) {
+        const targetAccountName = accountMatch[1].trim();
+
+        // 1. Fetch pending transaction for this LINE user (not expired)
+        const nowIso = new Date().toISOString();
+        const { data: pendingTx, error: pendingErr } = await supabase
+          .from("line_pending_transactions")
+          .select("*")
+          .eq("line_user_id", lineUserId)
+          .gte("expires_at", nowIso)
+          .maybeSingle();
+
+        if (pendingErr) {
+          console.error("LINE BOT: Failed to fetch pending transaction", pendingErr.message);
+        }
+
+        if (!pendingTx) {
+          await replyMessage(
+            replyToken,
+            "❌ ไม่พบรายการที่รอการบันทึก หรือรายการอาจหมดอายุแล้ว (มีอายุ 10 นาที) กรุณาพิมพ์ทำรายการใหม่อีกครั้งครับ"
+          );
+          continue;
+        }
+
+        // 2. Fetch matched account for this user
+        const { data: accountData, error: accountErr } = await supabase
+          .from("accounts")
+          .select("id, name")
+          .eq("user_id", userId)
+          .eq("name", targetAccountName)
+          .maybeSingle();
+
+        if (accountErr) {
+          console.error("LINE BOT: Failed to query account", accountErr.message);
+        }
+
+        if (!accountData) {
+          // If account name doesn't match, ask user again with quick replies
+          const { data: userAccounts } = await supabase
+            .from("accounts")
+            .select("id, name")
+            .eq("user_id", userId)
+            .eq("is_active", true)
+            .order("created_at", { ascending: true });
+
+          const quickReplies = userAccounts?.map((acc) => ({
+            type: "action",
+            action: {
+              type: "message",
+              label: acc.name.substring(0, 20), // LINE label limit is 20 chars
+              text: `เลือกบัญชี: ${acc.name}`,
+            },
+          })) || [];
+
+          await replyMessage(
+            replyToken,
+            `❌ ไม่พบชื่อบัญชี "${targetAccountName}" ในระบบ\n\nกรุณาเลือกบัญชีการเงินที่ถูกต้องจากตัวเลือกด้านล่างครับ:`,
+            quickReplies
+          );
+          continue;
+        }
+
+        // 3. Insert real transaction
+        const thDate = getThDate();
+        const todayStr = thDate.toISOString().split("T")[0];
+
+        const { error: insertError } = await supabase
+          .from("transactions")
+          .insert([
+            {
+              user_id: pendingTx.user_id,
+              type: pendingTx.type,
+              amount: pendingTx.amount,
+              date: todayStr,
+              account_id: accountData.id,
+              category_id: pendingTx.category_id,
+              note: pendingTx.note !== pendingTx.category_name ? pendingTx.note : null,
+              source: "line_bot",
+            },
+          ]);
+
+        if (insertError) {
+          console.error("LINE BOT: Failed to insert transaction", insertError.message);
+          await replyMessage(replyToken, `เกิดข้อผิดพลาดในการบันทึกรายการ: ${insertError.message}`);
+          continue;
+        }
+
+        // 4. Delete pending record
+        await supabase
+          .from("line_pending_transactions")
+          .delete()
+          .eq("id", pendingTx.id);
+
+        await replyMessage(
+          replyToken,
+          `✅ บันทึกรายการสำเร็จ!
+ประเภท: ${pendingTx.type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}
+ยอดเงิน: ฿${Number(pendingTx.amount).toLocaleString()}
+หมวดหมู่: ${pendingTx.category_name || "ไม่มี"}
+บัญชี: ${accountData.name}
+โน้ต: ${pendingTx.note || "-"}
+
+💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`
+        );
+        continue;
+      }
+
       // Command D: Quick Record transaction (e.g. "ค่าข้าว 150", "120 เดินทาง", "รายรับ ขายของ 500")
       // Extract number/amount
       const cleanInput = userMessage.replace(/,/g, "");
@@ -368,7 +483,7 @@ export async function POST(request: NextRequest) {
         matchedCategory = cats?.find(c => c.name === fallbackName) || cats?.[0] || null;
       }
 
-      // Fetch default active account for user
+      // Fetch user's active accounts
       const { data: accounts } = await supabase
         .from("accounts")
         .select("id, name")

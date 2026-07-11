@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import fs from "fs";
+import { createServerClient } from "@supabase/ssr";
+
 
 function writeLog(message: string, detail?: any) {
   try {
-    const logFile = "d:/New folder/CMN/line-debug.log";
     const timestamp = new Date().toISOString();
     const cleanDetail = detail ? (detail instanceof Error ? detail.stack || detail.message : JSON.stringify(detail)) : "";
-    const logLine = `[${timestamp}] ${message} ${cleanDetail}\n`;
-    fs.appendFileSync(logFile, logLine, "utf-8");
+    console.log(`[LINE-CB] [${timestamp}] ${message}`, cleanDetail);
   } catch (logErr) {
-    console.error("Failed to write to line-debug.log:", logErr);
+    console.error("Failed to write log:", logErr);
   }
 }
 
@@ -207,23 +206,52 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Generate a Magic Link login url to authenticate the user's session
-    writeLog("Generating magic link auth path...");
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+    // สร้าง magic link แล้วดึง token ออกมา exchange เพื่อ set session cookie
+    writeLog("Generating magic link for token extraction...");
+    const { data: linkData, error: linkGenError } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
       email: targetEmail,
-      options: {
-        redirectTo: `${requestUrl.origin}/dashboard`,
-      },
     });
 
-    if (linkError || !linkData?.properties?.action_link) {
-      writeLog("Failed to generate magic link login path", linkError);
-      return NextResponse.redirect(new URL("/login?error=magic_link_failed", request.url));
+    if (linkGenError || !linkData?.properties?.hashed_token) {
+      writeLog("Failed to generate magic link token", linkGenError);
+      return NextResponse.redirect(new URL("/login?error=session_failed", request.url));
     }
 
-    writeLog("Magic link generated. Authenticating session...", { actionLink: linkData.properties.action_link });
-    return NextResponse.redirect(new URL(linkData.properties.action_link));
+    // สร้าง response redirect ไป /dashboard
+    const dashboardUrl = new URL("/dashboard", requestUrl.origin);
+    const response = NextResponse.redirect(dashboardUrl);
+
+    // สร้าง supabase client ที่ set cookie ลงใน response โดยตรง
+    const supabaseForCookies = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+            );
+          },
+        },
+      }
+    );
+
+    // แลก hashed_token เป็น session — cookie ถูก set ผ่าน setAll ข้างบน
+    const { error: otpError } = await supabaseForCookies.auth.verifyOtp({
+      token_hash: linkData.properties.hashed_token,
+      type: "magiclink",
+    });
+
+    if (otpError) {
+      writeLog("Failed to verify OTP token", otpError);
+      return NextResponse.redirect(new URL("/login?error=session_failed", request.url));
+    }
+
+    writeLog("Session set via OTP exchange. Redirecting to dashboard.");
+    return response;
+
   } catch (err: any) {
     writeLog("Unexpected exception in LINE callback execution", err);
     return NextResponse.redirect(new URL(`/login?error=unexpected&details=${encodeURIComponent(err.message)}`, request.url));
