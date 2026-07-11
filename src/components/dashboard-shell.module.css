@@ -133,7 +133,7 @@
   right: 10px;
   bottom: 10px;
   display: none;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   background: rgba(6, 17, 40, 0.92);
   border: 1px solid rgba(137, 167, 255, 0.22);

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./couple.module.css";
-import { Heart, Users, Split, ArrowLeftRight, BarChart3 } from "lucide-react";
+import { Heart, Users, Split, ArrowLeftRight, BarChart3, LayoutDashboard, User, Wallet } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -36,6 +36,7 @@ type Transaction = {
   date: string;
   note: string | null;
   categories: { name: string } | null;
+  accounts?: { couple_id: string | null } | null;
 };
 
 type SplitDetail = {
@@ -71,7 +72,7 @@ export default function CoupleHubPage() {
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [partner, setPartner] = useState<UserProfile | null>(null);
   const [members, setMembers] = useState<CoupleMember[]>([]);
-  const [activeTab, setActiveTab] = useState<"relationship" | "splits" | "reports">("relationship");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "relationship" | "splits" | "reports">("dashboard");
 
   // State for setups
   const [inviteEmail, setInviteEmail] = useState("");
@@ -172,7 +173,7 @@ export default function CoupleHubPage() {
     // Fetch transactions of both users (only expenses/income, skip transfers)
     const { data: txsData } = await supabase
       .from("transactions")
-      .select("*, categories(name)")
+      .select("*, categories(name), accounts!account_id(couple_id)")
       .in("user_id", [currentUser.id, partner.id])
       .neq("type", "transfer")
       .is("deleted_at", null)
@@ -496,6 +497,52 @@ export default function CoupleHubPage() {
     };
   }, [splits, currentUser, partner]);
 
+  // Classified transaction data for 3-part dashboard
+  const classifiedData = useMemo(() => {
+    if (!currentUser || !partner) return {
+      user: { income: 0, expense: 0, transactions: [] as Transaction[] },
+      partner: { income: 0, expense: 0, transactions: [] as Transaction[] },
+      shared: { income: 0, expense: 0, transactions: [] as Transaction[] }
+    };
+
+    const userTxs: Transaction[] = [];
+    const partnerTxs: Transaction[] = [];
+    const sharedTxs: Transaction[] = [];
+
+    let userIncome = 0;
+    let userExpense = 0;
+    let partnerIncome = 0;
+    let partnerExpense = 0;
+    let sharedIncome = 0;
+    let sharedExpense = 0;
+
+    transactions.forEach((tx: any) => {
+      const isSharedAccount = tx.accounts && tx.accounts.couple_id === coupleId;
+
+      if (isSharedAccount) {
+        sharedTxs.push(tx);
+        if (tx.type === "income") sharedIncome += Number(tx.amount);
+        else if (tx.type === "expense") sharedExpense += Number(tx.amount);
+      } else {
+        if (tx.user_id === currentUser.id) {
+          userTxs.push(tx);
+          if (tx.type === "income") userIncome += Number(tx.amount);
+          else if (tx.type === "expense") userExpense += Number(tx.amount);
+        } else {
+          partnerTxs.push(tx);
+          if (tx.type === "income") partnerIncome += Number(tx.amount);
+          else if (tx.type === "expense") partnerExpense += Number(tx.amount);
+        }
+      }
+    });
+
+    return {
+      user: { income: userIncome, expense: userExpense, transactions: userTxs },
+      partner: { income: partnerIncome, expense: partnerExpense, transactions: partnerTxs },
+      shared: { income: sharedIncome, expense: sharedExpense, transactions: sharedTxs }
+    };
+  }, [transactions, currentUser, partner, coupleId]);
+
   if (loading) {
     return (
       <main className={styles.page}>
@@ -613,8 +660,8 @@ export default function CoupleHubPage() {
 
       {/* Navigation tabs */}
       <div className={styles.tabsContainer}>
-        <button onClick={() => setActiveTab("relationship")} className={`${styles.tabBtn} ${activeTab === "relationship" ? styles.tabBtnActive : ""}`}>
-          <Users size={16} /> ความสัมพันธ์
+        <button onClick={() => setActiveTab("dashboard")} className={`${styles.tabBtn} ${activeTab === "dashboard" ? styles.tabBtnActive : ""}`}>
+          <LayoutDashboard size={16} /> แดชบอร์ดคู่รัก
         </button>
         <button onClick={() => setActiveTab("splits")} className={`${styles.tabBtn} ${activeTab === "splits" ? styles.tabBtnActive : ""}`}>
           <Split size={16} /> หารค่าใช้จ่าย
@@ -622,7 +669,177 @@ export default function CoupleHubPage() {
         <button onClick={() => setActiveTab("reports")} className={`${styles.tabBtn} ${activeTab === "reports" ? styles.tabBtnActive : ""}`}>
           <BarChart3 size={16} /> รายงานคู่รัก
         </button>
+        <button onClick={() => setActiveTab("relationship")} className={`${styles.tabBtn} ${activeTab === "relationship" ? styles.tabBtnActive : ""}`}>
+          <Users size={16} /> ความสัมพันธ์
+        </button>
       </div>
+
+      {/* Tab Contents: Dashboard */}
+      {activeTab === "dashboard" && (
+        <div className={styles.dashboardGrid}>
+          {/* Column 1: บัญชีส่วนตัวของเรา */}
+          <div className={styles.dashboardCol}>
+            <div className={styles.colHeader}>
+              <User size={20} style={{ color: "#4f8cff" }} />
+              <span className={styles.colTitleText}>1. บัญชีส่วนตัวของฉัน</span>
+            </div>
+            
+            <div className={styles.flowSummary}>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายรับรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.incomeText}`}>
+                  +฿{classifiedData.user.income.toLocaleString()}
+                </span>
+              </div>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายจ่ายรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.expenseText}`}>
+                  -฿{classifiedData.user.expense.toLocaleString()}
+                </span>
+              </div>
+              <div className={`${styles.flowCard} ${styles.flowSummaryFull}`}>
+                <span className={styles.flowCardLabel}>ยอดดุลสุทธิ</span>
+                <span className={`${styles.flowCardValue} ${classifiedData.user.income - classifiedData.user.expense >= 0 ? styles.incomeText : styles.expenseText}`}>
+                  ฿{(classifiedData.user.income - classifiedData.user.expense).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.miniTxSection}>
+              <span className={styles.sectionLabel}>รายการล่าสุด</span>
+              <div className={styles.miniTxList}>
+                {classifiedData.user.transactions.slice(0, 10).map((tx) => (
+                  <div key={tx.id} className={styles.miniTxItem}>
+                    <div className={styles.miniTxMeta}>
+                      <div className={styles.miniTxCategory}>{tx.categories?.name || "อื่นๆ"}</div>
+                      {tx.note && <div className={styles.miniTxNote}>{tx.note}</div>}
+                      <div className={styles.miniTxDate}>{tx.date}</div>
+                    </div>
+                    <div className={styles.miniTxRight}>
+                      <span className={`${styles.miniTxAmt} ${tx.type === "income" ? styles.incomeText : styles.expenseText}`}>
+                        {tx.type === "income" ? "+" : "-"}฿{Number(tx.amount).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {classifiedData.user.transactions.length === 0 && (
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", textAlign: "center", padding: "1.5rem" }}>
+                    ไม่มีข้อมูลธุรกรรมส่วนตัว
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: บัญชีส่วนตัวของแฟน */}
+          <div className={styles.dashboardCol}>
+            <div className={styles.colHeader}>
+              <Heart size={20} style={{ color: "#ff6580" }} />
+              <span className={styles.colTitleText}>2. บัญชีส่วนตัวของแฟน ({partner.display_name || "แฟน"})</span>
+            </div>
+
+            <div className={styles.flowSummary}>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายรับรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.incomeText}`}>
+                  +฿{classifiedData.partner.income.toLocaleString()}
+                </span>
+              </div>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายจ่ายรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.expenseText}`}>
+                  -฿{classifiedData.partner.expense.toLocaleString()}
+                </span>
+              </div>
+              <div className={`${styles.flowCard} ${styles.flowSummaryFull}`}>
+                <span className={styles.flowCardLabel}>ยอดดุลสุทธิ</span>
+                <span className={`${styles.flowCardValue} ${classifiedData.partner.income - classifiedData.partner.expense >= 0 ? styles.incomeText : styles.expenseText}`}>
+                  ฿{(classifiedData.partner.income - classifiedData.partner.expense).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.miniTxSection}>
+              <span className={styles.sectionLabel}>รายการล่าสุด</span>
+              <div className={styles.miniTxList}>
+                {classifiedData.partner.transactions.slice(0, 10).map((tx) => (
+                  <div key={tx.id} className={styles.miniTxItem}>
+                    <div className={styles.miniTxMeta}>
+                      <div className={styles.miniTxCategory}>{tx.categories?.name || "อื่นๆ"}</div>
+                      {tx.note && <div className={styles.miniTxNote}>{tx.note}</div>}
+                      <div className={styles.miniTxDate}>{tx.date}</div>
+                    </div>
+                    <div className={styles.miniTxRight}>
+                      <span className={`${styles.miniTxAmt} ${tx.type === "income" ? styles.incomeText : styles.expenseText}`}>
+                        {tx.type === "income" ? "+" : "-"}฿{Number(tx.amount).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {classifiedData.partner.transactions.length === 0 && (
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", textAlign: "center", padding: "1.5rem" }}>
+                    ไม่มีข้อมูลธุรกรรมส่วนตัวแฟน
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: บัญชีกลาง */}
+          <div className={styles.dashboardCol}>
+            <div className={styles.colHeader}>
+              <Wallet size={20} style={{ color: "#2ee3a8" }} />
+              <span className={styles.colTitleText}>3. บัญชีรายรับ-รายจ่าย บัญชีกลาง</span>
+            </div>
+
+            <div className={styles.flowSummary}>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายรับรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.incomeText}`}>
+                  +฿{classifiedData.shared.income.toLocaleString()}
+                </span>
+              </div>
+              <div className={styles.flowCard}>
+                <span className={styles.flowCardLabel}>รายจ่ายรวม</span>
+                <span className={`${styles.flowCardValue} ${styles.expenseText}`}>
+                  -฿{classifiedData.shared.expense.toLocaleString()}
+                </span>
+              </div>
+              <div className={`${styles.flowCard} ${styles.flowSummaryFull}`}>
+                <span className={styles.flowCardLabel}>ยอดดุลสุทธิบัญชีกลาง</span>
+                <span className={`${styles.flowCardValue} ${classifiedData.shared.income - classifiedData.shared.expense >= 0 ? styles.incomeText : styles.expenseText}`}>
+                  ฿{(classifiedData.shared.income - classifiedData.shared.expense).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.miniTxSection}>
+              <span className={styles.sectionLabel}>รายการล่าสุด</span>
+              <div className={styles.miniTxList}>
+                {classifiedData.shared.transactions.slice(0, 10).map((tx) => (
+                  <div key={tx.id} className={styles.miniTxItem}>
+                    <div className={styles.miniTxMeta}>
+                      <div className={styles.miniTxCategory}>{tx.categories?.name || "อื่นๆ"}</div>
+                      {tx.note && <div className={styles.miniTxNote}>{tx.note}</div>}
+                      <div className={styles.miniTxDate}>{tx.date}</div>
+                    </div>
+                    <div className={styles.miniTxRight}>
+                      <span className={`${styles.miniTxAmt} ${tx.type === "income" ? styles.incomeText : styles.expenseText}`}>
+                        {tx.type === "income" ? "+" : "-"}฿{Number(tx.amount).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {classifiedData.shared.transactions.length === 0 && (
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", textAlign: "center", padding: "1.5rem" }}>
+                    ไม่มีข้อมูลธุรกรรมบัญชีกลาง
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Contents: Relationship */}
       {activeTab === "relationship" && (

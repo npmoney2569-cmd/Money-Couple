@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -22,6 +22,26 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get("error");
+      const detail = params.get("detail");
+      if (error) {
+        if (error === "line_token_failed") {
+          try {
+            const parsedDetail = JSON.parse(detail || "");
+            setMessage(`เข้าสู่ระบบด้วย LINE ล้มเหลว: ${parsedDetail.error_description || parsedDetail.error || detail}`);
+          } catch {
+            setMessage(`เข้าสู่ระบบด้วย LINE ล้มเหลว (Token exchange failed): ${detail || ""}`);
+          }
+        } else {
+          setMessage(`เข้าสู่ระบบล้มเหลว: ${error} ${detail ? `(${detail})` : ""}`);
+        }
+      }
+    }
+  }, []);
 
   const isLogin = mode === "login";
 

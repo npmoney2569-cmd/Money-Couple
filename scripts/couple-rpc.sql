@@ -64,6 +64,19 @@ begin
   insert into public.couple_members (couple_id, user_id, role, permission)
   values (v_couple_id, v_curr_user_id, 'member', 'edit');
 
+  -- 3b. Create an automatic shared account for the couple
+  insert into public.accounts (user_id, name, type, balance, initial_balance, currency, is_active, couple_id)
+  values (
+    v_curr_user_id,
+    'บัญชีกลางคู่รัก 💖',
+    'bank',
+    0,
+    0,
+    'THB',
+    true,
+    v_couple_id
+  );
+
   -- 4. Update the invite status
   update public.relationship_invites
   set status = 'accepted',

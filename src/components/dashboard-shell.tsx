@@ -273,6 +273,10 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
           <Wallet size={20} />
           <span>บัญชี</span>
         </Link>
+        <Link href="/dashboard/couple" className={`${styles.mobileItem} ${isActive("/dashboard/couple") ? styles.mobileActive : ""}`}>
+          <Heart size={20} />
+          <span>คู่รัก</span>
+        </Link>
       </div>
 
       {coupleId && (

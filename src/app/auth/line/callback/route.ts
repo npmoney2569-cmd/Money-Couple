@@ -1,23 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import fs from "fs";
+
+function writeLog(message: string, detail?: any) {
+  try {
+    const logFile = "d:/New folder/CMN/line-debug.log";
+    const timestamp = new Date().toISOString();
+    const cleanDetail = detail ? (detail instanceof Error ? detail.stack || detail.message : JSON.stringify(detail)) : "";
+    const logLine = `[${timestamp}] ${message} ${cleanDetail}\n`;
+    fs.appendFileSync(logFile, logLine, "utf-8");
+  } catch (logErr) {
+    console.error("Failed to write to line-debug.log:", logErr);
+  }
+}
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const state = requestUrl.searchParams.get("state");
 
+  writeLog("LINE Callback GET initiated", { url: request.url, code: code ? "EXISTS" : "MISSING", state });
+
   if (!code) {
-    console.error("LINE Callback: Missing authorization code");
+    writeLog("LINE Callback: Missing authorization code");
     return NextResponse.redirect(new URL("/login?error=missing_code", request.url));
   }
 
   const clientId = "2010660050";
   const clientSecret = "29d360624e169b13257d18eac68aaabf";
-  const redirectUri = `${requestUrl.origin}/auth/line/callback`;
+
+  // Reconstruct external redirect URI considering headers (protocol and host)
+  const host = request.headers.get("x-forwarded-host") || requestUrl.host;
+  const proto = request.headers.get("x-forwarded-proto") || (requestUrl.protocol.replace(":", ""));
+  const redirectUri = `${proto}://${host}/auth/line/callback`;
+
+  writeLog("Configured parameters", { clientId, redirectUri });
 
   try {
     // 1. Exchange authorization code for access and ID token from LINE
+    writeLog("Sending token exchange request to LINE API...");
     const tokenRes = await fetch("https://api.line.me/oauth2/v2.1/token", {
       method: "POST",
       headers: {
@@ -34,15 +56,15 @@ export async function GET(request: NextRequest) {
 
     if (!tokenRes.ok) {
       const errData = await tokenRes.json();
-      console.error("LINE Token exchange failed:", errData);
-      return NextResponse.redirect(new URL("/login?error=line_token_failed", request.url));
+      writeLog("LINE Token exchange failed", { status: tokenRes.status, statusText: tokenRes.statusText, error: errData });
+      return NextResponse.redirect(new URL(`/login?error=line_token_failed&detail=${encodeURIComponent(JSON.stringify(errData))}`, request.url));
     }
 
     const tokenData = await tokenRes.json();
     const idToken = tokenData.id_token;
 
     if (!idToken) {
-      console.error("LINE Callback: Token response did not contain id_token");
+      writeLog("LINE Callback: Token response did not contain id_token");
       return NextResponse.redirect(new URL("/login?error=missing_id_token", request.url));
     }
 
@@ -55,19 +77,22 @@ export async function GET(request: NextRequest) {
     const lineUserId = payload.sub;
     const name = payload.name || "LINE User";
     const picture = payload.picture || "";
-    // If LINE did not return an email (user denied permission), we construct a deterministic pseudo-email
     const email = payload.email || `line_${lineUserId}@line.cmn`;
 
+    writeLog("Decoded ID Token profile info", { lineUserId, name, email });
+
     if (!lineUserId) {
-      console.error("LINE Callback: Decoded ID token is missing sub claim");
+      writeLog("LINE Callback: Decoded ID token is missing sub claim");
       return NextResponse.redirect(new URL("/login?error=invalid_token_payload", request.url));
     }
 
     const supabaseAdmin = createAdminClient();
     
     // Check if user is already logged in locally
+    writeLog("Checking local cookies user session...");
     const supabaseUserClient = await createClient();
     const { data: { user: currentUser } } = await supabaseUserClient.auth.getUser();
+    writeLog("Session user check complete", { userId: currentUser ? currentUser.id : null });
 
     // 3. Check if this LINE User ID is already linked to an account
     const { data: providerData, error: providerError } = await supabaseAdmin
@@ -78,17 +103,21 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (providerError) {
-      console.error("Failed to query auth_providers:", providerError.message);
+      writeLog("Failed to query auth_providers table", providerError);
+    } else {
+      writeLog("auth_providers query results", { providerData });
     }
 
     if (currentUser) {
+      writeLog("Processing linking flow for logged in user", { currentUserId: currentUser.id });
       // User is already logged in, they want to link this LINE account
       if (providerData && providerData.user_id !== currentUser.id) {
-        // Already linked to someone else
+        writeLog("LINE account is already linked to another user ID", { linkedUserId: providerData.user_id });
         return NextResponse.redirect(new URL("/dashboard/security?error=line_already_linked", request.url));
       }
 
       // Link to current user
+      writeLog("Upserting record into auth_providers...");
       const { error: linkError } = await supabaseAdmin
         .from("auth_providers")
         .upsert({
@@ -101,29 +130,34 @@ export async function GET(request: NextRequest) {
         });
 
       if (linkError) {
-        console.error("Failed to link LINE in callback:", linkError.message);
+        writeLog("Failed to upsert LINE auth_provider link", linkError);
         return NextResponse.redirect(new URL("/dashboard/security?error=link_failed", request.url));
       }
 
+      writeLog("Successfully linked LINE. Redirecting back to security with success state.");
       return NextResponse.redirect(new URL("/dashboard/security?success=line_linked", request.url));
     }
 
+    // Login Flow
+    writeLog("Processing login flow...");
     let targetUserId = providerData?.user_id || null;
     let targetEmail = email;
 
     if (targetUserId) {
-      // User is already linked, fetch their registered email
+      writeLog("User is already linked to targetUserId", { targetUserId });
       const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
       if (userError || !userData?.user) {
-        console.error("Failed to fetch user by linked ID, falling back:", userError?.message);
+        writeLog("Failed to fetch target user details, falling back", userError);
       } else {
         targetEmail = userData.user.email || email;
+        writeLog("Loaded target user email", { targetEmail });
       }
     } else {
-      // 4. User is not linked yet. Check if a user with this email already exists
+      writeLog("User is not linked yet. Searching user database by email", { email });
+      // Check if user with this email already exists
       const { data: usersList, error: listError } = await supabaseAdmin.auth.admin.listUsers();
       if (listError) {
-        console.error("Failed to retrieve user list from Supabase:", listError.message);
+        writeLog("Failed to list users from Supabase admin", listError);
       }
 
       const existingUser = usersList?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
@@ -131,8 +165,9 @@ export async function GET(request: NextRequest) {
       if (existingUser) {
         targetUserId = existingUser.id;
         targetEmail = existingUser.email || email;
+        writeLog("Found existing email user. Binding to existing user ID", { targetUserId });
       } else {
-        // Create new user in Supabase auth system
+        writeLog("User email not found. Creating a new user...");
         const username = `line_${lineUserId.substring(0, 10).toLowerCase()}`;
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email,
@@ -145,15 +180,17 @@ export async function GET(request: NextRequest) {
         });
 
         if (createError || !newUser?.user) {
-          console.error("Failed to create new user in Supabase:", createError?.message);
+          writeLog("Failed to create new user record in Supabase auth system", createError);
           return NextResponse.redirect(new URL("/login?error=user_creation_failed", request.url));
         }
 
         targetUserId = newUser.user.id;
         targetEmail = newUser.user.email || email;
+        writeLog("Successfully created new user", { targetUserId });
       }
 
-      // 5. Link this LINE Login to the user in auth_providers table
+      // Link this LINE Login to the user in auth_providers table
+      writeLog("Recording auth_provider link...");
       const { error: linkError } = await supabaseAdmin
         .from("auth_providers")
         .upsert({
@@ -166,11 +203,12 @@ export async function GET(request: NextRequest) {
         });
 
       if (linkError) {
-        console.error("Failed to record LINE link in auth_providers table:", linkError.message);
+        writeLog("Failed to record LINE link in auth_providers table during signup/login", linkError);
       }
     }
 
-    // 6. Generate a Magic Link login url to authenticate the user's session
+    // Generate a Magic Link login url to authenticate the user's session
+    writeLog("Generating magic link auth path...");
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
       email: targetEmail,
@@ -180,14 +218,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      console.error("Failed to generate magic link login path:", linkError?.message);
+      writeLog("Failed to generate magic link login path", linkError);
       return NextResponse.redirect(new URL("/login?error=magic_link_failed", request.url));
     }
 
-    // 7. Redirect the browser to Supabase's verification URL to set cookies and enter the dashboard
+    writeLog("Magic link generated. Authenticating session...", { actionLink: linkData.properties.action_link });
     return NextResponse.redirect(new URL(linkData.properties.action_link));
   } catch (err: any) {
-    console.error("LINE login callback exception:", err);
+    writeLog("Unexpected exception in LINE callback execution", err);
     return NextResponse.redirect(new URL(`/login?error=unexpected&details=${encodeURIComponent(err.message)}`, request.url));
   }
 }

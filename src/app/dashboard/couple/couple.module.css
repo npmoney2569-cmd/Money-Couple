@@ -455,3 +455,147 @@
   font-size: 0.95rem;
   outline: none;
 }
+
+/* Dashboard Tab Styling */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.dashboardCol {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.colHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.75rem;
+}
+
+.colTitleText {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.flowSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.flowSummaryFull {
+  grid-column: span 2;
+}
+
+.flowCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flowCardLabel {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.flowCardValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.incomeText {
+  color: #2ee3a8;
+}
+
+.expenseText {
+  color: #ff6580;
+}
+
+.neutralText {
+  color: #4f8cff;
+}
+
+.miniTxSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sectionLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.miniTxList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.miniTxItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  gap: 8px;
+}
+
+.miniTxMeta {
+  flex: 1;
+}
+
+.miniTxCategory {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.miniTxNote {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.miniTxDate {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.miniTxRight {
+  text-align: right;
+}
+
+.miniTxAmt {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
