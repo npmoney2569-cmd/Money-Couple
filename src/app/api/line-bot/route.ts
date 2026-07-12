@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // 4. Command Router
-      
+
       // Command A: Delete recent transaction e.g., "ลบ #1"
       const deleteMatch = userMessage.match(/^ลบ\s*#([1-5])$/i);
       if (deleteMatch) {
