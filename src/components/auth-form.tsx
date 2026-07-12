@@ -107,24 +107,28 @@ export default function AuthForm({ mode }: AuthFormProps) {
         if (normalizedInput === "admin") {
           email = "admin@cmn.local";
         } else {
-          const { data: resolvedEmail, error: resolveError } = await supabase.rpc("resolve_login_email", {
-            login_input: normalizedInput,
-          });
+          // Query users table directly (no RPC needed)
+          const { data: userRow, error: resolveError } = await supabase
+            .from("users")
+            .select("email")
+            .or(`username.eq.${normalizedInput},email.eq.${normalizedInput}`)
+            .is("deleted_at", null)
+            .maybeSingle();
 
           if (resolveError) {
-            console.error("resolve_login_email error:", resolveError);
+            console.error("username lookup error:", resolveError);
             setMessage(`เข้าสู่ระบบด้วย Username ไม่สำเร็จ: ${resolveError.message}`);
             setLoading(false);
             return;
           }
 
-          if (!resolvedEmail || typeof resolvedEmail !== "string") {
+          if (!userRow?.email) {
             setMessage("ไม่พบ Username นี้ กรุณาตรวจสอบอีกครั้ง");
             setLoading(false);
             return;
           }
 
-          email = resolvedEmail.toLowerCase();
+          email = userRow.email.toLowerCase();
         }
       }
 
