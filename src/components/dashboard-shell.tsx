@@ -98,7 +98,11 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [partnerName, setPartnerName] = useState<string>("แฟนของฉัน");
   const [userName, setUserName] = useState<string>("ฉัน");
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [myUserId, setMyUserId] = useState<string | null>(null);
   const [sharedBalance, setSharedBalance] = useState<number>(0);
+  const [userNetBalance, setUserNetBalance] = useState<number | null>(null);
+  const [partnerNetBalance, setPartnerNetBalance] = useState<number | null>(null);
   const [userSharePercent, setUserSharePercent] = useState<number>(50);
   const [partnerSharePercent, setPartnerSharePercent] = useState<number>(50);
   const [sharedGoalText, setSharedGoalText] = useState<string>("เป้าหมายร่วม");
@@ -130,11 +134,35 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
         if (other && other.users) {
           const otherProfile = other.users as any;
           setPartnerName(otherProfile.display_name || otherProfile.email.split("@")[0]);
+          setPartnerId(other.user_id);
         }
         if (me && me.users) {
           const myProfile = me.users as any;
           setUserName(myProfile.display_name || "ฉัน");
+          setMyUserId(user.id);
         }
+      }
+
+      // Fetch net balance (income - expense) for each member
+      const memberIds = allMembers?.map(m => m.user_id) || [];
+      if (memberIds.length > 0) {
+        const { data: txs } = await supabase
+          .from("transactions")
+          .select("user_id, type, amount")
+          .in("user_id", memberIds)
+          .is("deleted_at", null)
+          .neq("type", "transfer");
+
+        let myNet = 0;
+        let partnerNet = 0;
+        const partnerId = allMembers?.find(m => m.user_id !== user.id)?.user_id;
+        txs?.forEach(tx => {
+          const delta = tx.type === "income" ? Number(tx.amount) : -Number(tx.amount);
+          if (tx.user_id === user.id) myNet += delta;
+          else if (tx.user_id === partnerId) partnerNet += delta;
+        });
+        setUserNetBalance(myNet);
+        setPartnerNetBalance(partnerNet);
       }
 
       // Fetch shared accounts balance
@@ -313,7 +341,11 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
               <div className={styles.progressBarContainer}>
                 <div className={styles.progressLabel}>
                   <span className={styles.progressLabelName}>{userName}</span>
-                  <span>{userSharePercent}%</span>
+                  <span style={{ color: userNetBalance !== null && userNetBalance >= 0 ? "#2ee3a8" : "#ff6580", fontWeight: 600 }}>
+                    {userNetBalance !== null
+                      ? new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 0 }).format(userNetBalance)
+                      : `${userSharePercent}%`}
+                  </span>
                 </div>
                 <div className={styles.progressBarTrack}>
                   <div className={styles.progressBarFillUser} style={{ width: `${userSharePercent}%` }} />
@@ -328,7 +360,11 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
               <div className={styles.progressBarContainer}>
                 <div className={styles.progressLabel}>
                   <span className={styles.progressLabelName}>{partnerName}</span>
-                  <span>{partnerSharePercent}%</span>
+                  <span style={{ color: partnerNetBalance !== null && partnerNetBalance >= 0 ? "#2ee3a8" : "#ff6580", fontWeight: 600 }}>
+                    {partnerNetBalance !== null
+                      ? new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 0 }).format(partnerNetBalance)
+                      : `${partnerSharePercent}%`}
+                  </span>
                 </div>
                 <div className={styles.progressBarTrack}>
                   <div className={styles.progressBarFillPartner} style={{ width: `${partnerSharePercent}%` }} />
