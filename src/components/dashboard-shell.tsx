@@ -150,8 +150,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
         const { data: accs } = await supabase
           .from("accounts")
           .select("user_id, balance")
-          .in("user_id", memberIds)
-          .is("deleted_at", null);
+          .in("user_id", memberIds);
 
         let myTotal = 0;
         let partnerTotal = 0;
