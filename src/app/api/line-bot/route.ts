@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -491,47 +491,56 @@ export async function POST(request: NextRequest) {
         .eq("is_active", true)
         .order("created_at", { ascending: true });
 
-      const defaultAccount = accounts?.[0];
-
-      if (!defaultAccount) {
-        await replyMessage(replyToken, "ไม่พบบัญชีเงินสำหรับสร้างรายการ กรุณาสร้างบัญชีบนแอปก่อนใช้งานครับ");
+      if (!accounts || accounts.length === 0) {
+        await replyMessage(replyToken, "ไม่พบบัญชีเงินในระบบ กรุณาสร้างบัญชีบนแอปก่อนใช้งานครับ");
         continue;
       }
 
-      const thDate = getThDate();
-      const todayStr = thDate.toISOString().split("T")[0];
-
-      // Insert transaction
-      const { error: insertError } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: userId,
-            type,
-            amount,
-            date: todayStr,
-            account_id: defaultAccount.id,
+      // 1 บัญชี — บันทึกทันที ไม่ต้องถาม
+      if (accounts.length === 1) {
+        const thDate = getThDate();
+        const todayStr = thDate.toISOString().split("T")[0];
+        const { error: insertError } = await supabase
+          .from("transactions")
+          .insert([{
+            user_id: userId, type, amount, date: todayStr,
+            account_id: accounts[0].id,
             category_id: matchedCategory?.id || null,
             note: cleanText !== matchedCategory?.name ? cleanText : null,
             source: "line_bot",
-          },
-        ]);
-
-      if (insertError) {
-        throw insertError;
+          }]);
+        if (insertError) throw insertError;
+        await replyMessage(replyToken,
+          `✅ บันทึกรายการสำเร็จ!\nประเภท: ${type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}\nยอดเงิน: ฿${amount.toLocaleString()}\nหมวดหมู่: ${matchedCategory?.name || "ไม่มี"}\nบัญชี: ${accounts[0].name}\nโน้ต: ${cleanText}\n\n💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`);
+        continue;
       }
 
-      await replyMessage(
-        replyToken,
-        `✅ บันทึกรายการสำเร็จ!
-ประเภท: ${type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}
-ยอดเงิน: ฿${amount.toLocaleString()}
-หมวดหมู่: ${matchedCategory?.name || "ไม่มี"}
-บัญชี: ${defaultAccount.name}
-โน้ต: ${cleanText}
+      // 2+ บัญชี — บันทึก Pending แล้วถามเลือกบัญชีผ่าน Quick Reply
+      const thDateP = getThDate();
+      const expiresAt = new Date(thDateP.getTime() + 10 * 60 * 1000).toISOString();
+      const { error: pendingInsertError } = await supabase
+        .from("line_pending_transactions")
+        .upsert({
+          line_user_id: lineUserId, user_id: userId, type, amount,
+          category_id: matchedCategory?.id || null,
+          category_name: matchedCategory?.name || null,
+          note: cleanText, expires_at: expiresAt,
+        }, { onConflict: "line_user_id" });
 
-💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`
-      );
+      if (pendingInsertError) {
+        console.error("LINE BOT: Failed to upsert pending transaction", pendingInsertError.message);
+        await replyMessage(replyToken, `เกิดข้อผิดพลาดในการเตรียมรายการ: ${pendingInsertError.message}`);
+        continue;
+      }
+
+      const quickReplies = accounts.map((acc) => ({
+        type: "action",
+        action: { type: "message", label: acc.name.substring(0, 20), text: `เลือกบัญชี: ${acc.name}` },
+      }));
+
+      await replyMessage(replyToken,
+        `❓ เลือกบัญชีสำหรับบันทึกรายการ:\n\nประเภท: ${type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}\nหมวดหมู่: ${matchedCategory?.name || "ไม่มี"}\nจำนวนเงิน: ฿${amount.toLocaleString()}\nโน้ต: ${cleanText}`,
+        quickReplies);
     } catch (err: any) {
       console.error("LINE BOT internal processing error:", err);
       await replyMessage(replyToken, `เกิดข้อผิดพลาดภายในระบบ: ${err.message || err}`);
