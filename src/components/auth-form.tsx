@@ -107,28 +107,29 @@ export default function AuthForm({ mode }: AuthFormProps) {
         if (normalizedInput === "admin") {
           email = "admin@cmn.local";
         } else {
-          // Query users table directly (no RPC needed)
-          const { data: userRow, error: resolveError } = await supabase
-            .from("users")
-            .select("email")
-            .or(`username.eq.${normalizedInput},email.eq.${normalizedInput}`)
-            .is("deleted_at", null)
-            .maybeSingle();
+          // Resolve username server-side (avoids client anon key issues on Vercel)
+          const res = await fetch("/api/resolve-username", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: normalizedInput }),
+          });
 
-          if (resolveError) {
-            console.error("username lookup error:", resolveError);
-            setMessage(`เข้าสู่ระบบด้วย Username ไม่สำเร็จ: ${resolveError.message}`);
+          const json = await res.json();
+
+          if (!res.ok || json.error) {
+            console.error("username lookup error:", json.error);
+            setMessage(`เข้าสู่ระบบด้วย Username ไม่สำเร็จ: ${json.error || res.statusText}`);
             setLoading(false);
             return;
           }
 
-          if (!userRow?.email) {
+          if (!json.email) {
             setMessage("ไม่พบ Username นี้ กรุณาตรวจสอบอีกครั้ง");
             setLoading(false);
             return;
           }
 
-          email = userRow.email.toLowerCase();
+          email = json.email.toLowerCase();
         }
       }
 
