@@ -185,7 +185,7 @@ export async function getDashboardData() {
       .is("deleted_at", null)
       .order("date", { ascending: false })
       .limit(8),
-    supabase.from("accounts").select("id,name,balance").eq("is_active", true).order("name"),
+    supabase.from("accounts").select("id,name,balance").eq("is_active", true).eq("user_id", user?.id ?? "").order("name"),
     supabase.from("categories").select("id,name,type"),
     supabase.from("budgets").select("id,amount,period").order("start_date", { ascending: false }).limit(6),
     supabase.from("goals").select("id,name,target_amount,current_amount").order("created_at", { ascending: false }).limit(4),
