@@ -567,6 +567,32 @@ export default function CrudPage({
         </table>
       </div>
 
+      {/* Mobile card list — shown only on small screens instead of table */}
+      <div className={styles.mobileCardList}>
+        {rows.length === 0 ? (
+          <p className={styles.status}>ยังไม่มีข้อมูล</p>
+        ) : (
+          rows.map((row) => (
+            <div key={String(row.id)} className={styles.mobileCard}>
+              {columns.map((col) => {
+                const val = col.render ? col.render(row[col.key]) : renderCellValue(row, col.key, row[col.key]);
+                if (val === null || val === undefined || val === "-" || val === "") return null;
+                return (
+                  <div key={col.key} className={styles.mobileCardRow}>
+                    <span className={styles.mobileCardLabel}>{col.label}</span>
+                    <span className={styles.mobileCardValue}>{val}</span>
+                  </div>
+                );
+              })}
+              <div className={styles.mobileCardActions}>
+                <button type="button" className={styles.editButton} onClick={() => handleEdit(row)}>แก้ไข</button>
+                <button type="button" className={styles.deleteButton} onClick={() => handleDelete(row.id)}>ลบ</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
       {totalCount > pageSize && (
         <div className={styles.pagination}>

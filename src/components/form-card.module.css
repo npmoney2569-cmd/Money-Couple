@@ -188,15 +188,24 @@
   }
 
   .table th {
-    padding: 7px 6px;
+    padding: 8px 6px;
     font-size: 0.75rem;
+    white-space: nowrap;
   }
 
   .table td {
-    padding: 7px 6px;
-    font-size: 0.78rem;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    padding: 8px 6px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  /* Hide non-essential columns on mobile: แท็ก, ใบเสร็จ, note, สถานะ */
+  /* th/td position 6,7 = tag, receipt (usually last 2 before actions) */
+  .table th:nth-child(5),
+  .table td:nth-child(5),
+  .table th:nth-child(6),
+  .table td:nth-child(6) {
+    display: none;
   }
 
   .rowActions {
@@ -219,6 +228,66 @@
   .cancelButton {
     padding: 9px 14px;
     font-size: 0.85rem;
+  }
+}
+
+/* ── Mobile card list (replaces table on small screens) ── */
+.mobileCardList {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .tableWrap {
+    display: none;
+  }
+
+  .mobileCardList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .mobileCard {
+    background: rgba(9, 18, 40, 0.7);
+    border: 1px solid rgba(139, 170, 255, 0.18);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobileCardRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mobileCardLabel {
+    color: #8b92a5;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .mobileCardValue {
+    color: #eef3ff;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .mobileCardActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(139, 170, 255, 0.12);
   }
 }
 
