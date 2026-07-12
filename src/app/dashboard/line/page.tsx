@@ -1,14 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { createClient } from "@/lib/supabase/client";
 import DashboardModulePage from "@/components/dashboard-module-page";
 
 const LINE_BOT_ID = "@470pqnbe";
 const LINE_ADD_URL = `https://line.me/R/ti/p/${LINE_BOT_ID}`;
 const LINE_QR_URL = `https://qr-official.line.me/sid/M/470pqnbe.png`;
 
+type AuthProvider = {
+  id: string;
+  provider: string;
+  provider_uid: string | null;
+  line_user_id: string | null;
+  created_at: string | null;
+};
+
+function maskUid(uid: string | null) {
+  if (!uid) return "-";
+  if (uid.length <= 8) return uid;
+  return uid.substring(0, 4) + "••••" + uid.substring(uid.length - 4);
+}
+
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return "-";
+  return new Date(dateStr).toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" });
+}
+
 export default function LineBotPage() {
+  const supabase = useMemo(() => createClient(), []);
   const [copied, setCopied] = useState(false);
+  const [lineProvider, setLineProvider] = useState<AuthProvider | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState(true);
+  const [linking, setLinking] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
+  const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    // Check success/error from LINE OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "line_linked") setMsg({ type: "success", text: "✅ เชื่อมต่อบัญชี LINE เรียบร้อยแล้ว!" });
+    if (params.get("error") === "line_already_linked") setMsg({ type: "error", text: "❌ บัญชี LINE นี้ถูกเชื่อมต่อกับผู้ใช้รายอื่นแล้ว" });
+
+    async function loadProvider() {
+      setLoadingProvider(true);
+      const { data } = await supabase.from("auth_providers").select("*").eq("provider", "line").maybeSingle();
+      setLineProvider(data ?? null);
+      setLoadingProvider(false);
+    }
+    loadProvider();
+  }, [supabase]);
+
+  function handleLinkLine() {
+    setLinking(true);
+    const clientId = "2010660050";
+    const redirectUri = encodeURIComponent(window.location.origin + "/auth/line/callback");
+    const state = "link_account";
+    window.location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`;
+  }
+
+  async function handleUnlinkLine() {
+    if (!lineProvider) return;
+    if (!confirm("ยืนยันการยกเลิกการเชื่อมต่อ LINE?")) return;
+    setUnlinking(true);
+    const { error } = await supabase.from("auth_providers").delete().eq("id", lineProvider.id);
+    if (error) {
+      setMsg({ type: "error", text: "❌ " + error.message });
+    } else {
+      setLineProvider(null);
+      setMsg({ type: "success", text: "✅ ยกเลิกการเชื่อมต่อ LINE เรียบร้อยแล้ว" });
+    }
+    setUnlinking(false);
+  }
 
   function copyId() {
     navigator.clipboard.writeText(LINE_BOT_ID);
@@ -18,148 +81,46 @@ export default function LineBotPage() {
 
   return (
     <div>
-      {/* LINE Bot Add Friend Banner */}
+      {/* ── Add Friend Banner ── */}
       <div style={{
         background: "linear-gradient(135deg, #06C755 0%, #00a844 60%, #007a32 100%)",
-        borderRadius: 20,
-        padding: "32px 36px",
-        margin: "0 0 28px 0",
-        display: "flex",
-        gap: 36,
-        alignItems: "center",
-        flexWrap: "wrap",
-        boxShadow: "0 8px 32px rgba(6,199,85,0.25)",
-        position: "relative",
-        overflow: "hidden",
+        borderRadius: 20, padding: "32px 36px", marginBottom: 24,
+        display: "flex", gap: 36, alignItems: "center", flexWrap: "wrap",
+        boxShadow: "0 8px 32px rgba(6,199,85,0.25)", position: "relative", overflow: "hidden",
       }}>
-        {/* Decorative circle */}
-        <div style={{
-          position: "absolute", right: -40, top: -40,
-          width: 200, height: 200,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.07)",
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute", right: 60, bottom: -60,
-          width: 160, height: 160,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.05)",
-          pointerEvents: "none",
-        }} />
+        <div style={{ position: "absolute", right: -40, top: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", right: 60, bottom: -60, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
 
-        {/* QR Code */}
-        <div style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: 12,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-          flexShrink: 0,
-        }}>
+        {/* QR */}
+        <div style={{ background: "#fff", borderRadius: 16, padding: 12, boxShadow: "0 4px 16px rgba(0,0,0,0.18)", flexShrink: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={LINE_QR_URL}
-            alt="QR Code แอด LINE Bot"
-            width={130}
-            height={130}
-            style={{ display: "block", borderRadius: 8 }}
-            onError={(e) => {
-              // Fallback: hide if QR load fails
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
+          <img src={LINE_QR_URL} alt="QR Code" width={130} height={130} style={{ display: "block", borderRadius: 8 }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
         </div>
 
         {/* Info */}
         <div style={{ flex: 1, minWidth: 220 }}>
-          {/* LINE logo text */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="white" fillOpacity="0.2"/>
-              <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="bold" fill="white">L</text>
-            </svg>
-            <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              LINE Bot
-            </span>
-          </div>
-
-          <h2 style={{ color: "#fff", fontSize: 24, fontWeight: 800, margin: "0 0 4px 0", lineHeight: 1.2 }}>
-            Money Couple Bot
-          </h2>
+          <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>LINE Bot</div>
+          <h2 style={{ color: "#fff", fontSize: 24, fontWeight: 800, margin: "0 0 4px 0" }}>Money Couple Bot</h2>
           <p style={{ color: "rgba(255,255,255,0.82)", fontSize: 14, margin: "0 0 20px 0", lineHeight: 1.6 }}>
             บันทึกรายรับ-รายจ่ายผ่าน LINE ได้ทันที<br />
             แค่พิมพ์ <strong style={{ color: "#fff" }}>"ค่าข้าว 60"</strong> หรือ <strong style={{ color: "#fff" }}>"รายรับ เงินเดือน 15000"</strong>
           </p>
-
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            {/* Add friend button */}
-            <a
-              href={LINE_ADD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "#fff",
-                color: "#06C755",
-                fontWeight: 700,
-                fontSize: 15,
-                borderRadius: 50,
-                padding: "10px 24px",
-                textDecoration: "none",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
-                transition: "transform 0.15s, box-shadow 0.15s",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.2)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.15)";
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-                <path d="M16 3C8.82 3 3 8.14 3 14.4c0 4.1 2.36 7.7 5.92 9.9L7.5 29l5.3-2.82c1.04.28 2.14.42 3.2.42 7.18 0 13-5.14 13-11.4S23.18 3 16 3z" fill="#06C755"/>
-              </svg>
-              เพิ่มเพื่อนใน LINE
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a href={LINE_ADD_URL} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#06C755", fontWeight: 700, fontSize: 15, borderRadius: 50, padding: "10px 24px", textDecoration: "none", boxShadow: "0 2px 12px rgba(0,0,0,0.15)" }}>
+              💚 เพิ่มเพื่อนใน LINE
             </a>
-
-            {/* Copy ID button */}
-            <button
-              onClick={copyId}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                background: "rgba(255,255,255,0.2)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 14,
-                borderRadius: 50,
-                padding: "10px 20px",
-                border: "1.5px solid rgba(255,255,255,0.4)",
-                cursor: "pointer",
-                transition: "background 0.15s",
-              }}
-            >
+            <button onClick={copyId}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.2)", color: "#fff", fontWeight: 600, fontSize: 14, borderRadius: 50, padding: "10px 20px", border: "1.5px solid rgba(255,255,255,0.4)", cursor: "pointer" }}>
               {copied ? "✓ คัดลอกแล้ว!" : `คัดลอก ID: ${LINE_BOT_ID}`}
             </button>
           </div>
         </div>
 
-        {/* Usage guide */}
-        <div style={{
-          background: "rgba(255,255,255,0.13)",
-          borderRadius: 14,
-          padding: "16px 20px",
-          minWidth: 200,
-          flexShrink: 0,
-        }}>
-          <p style={{ color: "#fff", fontWeight: 700, fontSize: 13, margin: "0 0 10px 0", letterSpacing: "0.04em" }}>
-            📝 วิธีใช้งาน
-          </p>
+        {/* Usage */}
+        <div style={{ background: "rgba(255,255,255,0.13)", borderRadius: 14, padding: "16px 20px", minWidth: 200, flexShrink: 0 }}>
+          <p style={{ color: "#fff", fontWeight: 700, fontSize: 13, margin: "0 0 10px 0" }}>📝 วิธีใช้งาน</p>
           {[
             { cmd: "ค่าข้าว 60", desc: "บันทึกรายจ่าย" },
             { cmd: "รับเงิน 500", desc: "บันทึกรายรับ" },
@@ -167,16 +128,66 @@ export default function LineBotPage() {
             { cmd: "สรุป", desc: "สรุปรายการเดือนนี้" },
           ].map(({ cmd, desc }) => (
             <div key={cmd} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
-              <code style={{ background: "rgba(0,0,0,0.2)", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 12, fontFamily: "monospace" }}>
-                {cmd}
-              </code>
+              <code style={{ background: "rgba(0,0,0,0.2)", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 12 }}>{cmd}</code>
               <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>{desc}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Transaction list */}
+      {/* ── LINE Account Linking ── */}
+      <div style={{
+        background: "var(--card-bg, #1a1f35)", borderRadius: 16, padding: "24px 28px", marginBottom: 24,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}>
+        <h3 style={{ margin: "0 0 6px 0", fontSize: 17, fontWeight: 700, color: "var(--text-primary, #fff)" }}>
+          💚 เชื่อมต่อบัญชี LINE ของคุณ
+        </h3>
+        <p style={{ margin: "0 0 20px 0", fontSize: 13, color: "var(--text-muted, #8a8fa8)" }}>
+          เชื่อมต่อ LINE เพื่อบันทึกรายการผ่านบอทและรับการแจ้งเตือน
+        </p>
+
+        {msg && (
+          <div style={{
+            background: msg.type === "success" ? "rgba(46,227,168,0.12)" : "rgba(255,101,128,0.12)",
+            border: `1px solid ${msg.type === "success" ? "#2ee3a8" : "#ff6580"}`,
+            color: msg.type === "success" ? "#2ee3a8" : "#ff6580",
+            borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 14,
+          }}>
+            {msg.text}
+          </div>
+        )}
+
+        {loadingProvider ? (
+          <div style={{ color: "var(--text-muted, #8a8fa8)", fontSize: 14 }}>กำลังโหลด...</div>
+        ) : lineProvider ? (
+          /* ─ Already linked ─ */
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(6,199,85,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>💚</div>
+              <div>
+                <div style={{ fontWeight: 700, color: "var(--text-primary, #fff)", fontSize: 15 }}>LINE</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted, #8a8fa8)" }}>
+                  UID: {maskUid(lineProvider.line_user_id)} · เชื่อมต่อเมื่อ {formatDate(lineProvider.created_at)}
+                </div>
+              </div>
+            </div>
+            <span style={{ background: "rgba(46,227,168,0.15)", color: "#2ee3a8", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 600 }}>✓ เชื่อมต่อแล้ว</span>
+            <button onClick={handleUnlinkLine} disabled={unlinking}
+              style={{ background: "rgba(255,101,128,0.12)", color: "#ff6580", border: "1px solid rgba(255,101,128,0.3)", borderRadius: 8, padding: "8px 16px", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+              {unlinking ? "กำลังยกเลิก..." : "ยกเลิกการเชื่อมต่อ"}
+            </button>
+          </div>
+        ) : (
+          /* ─ Not linked ─ */
+          <button onClick={handleLinkLine} disabled={linking}
+            style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#06C755", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 12, padding: "12px 28px", border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(6,199,85,0.3)" }}>
+            💚 {linking ? "กำลังเชื่อมต่อ..." : "เชื่อมต่อกับบัญชี LINE"}
+          </button>
+        )}
+      </div>
+
+      {/* ── Transaction List ── */}
       <DashboardModulePage
         title="รายการจาก LINE Bot"
         subtitle="รายการที่บันทึกผ่าน LINE Bot"
