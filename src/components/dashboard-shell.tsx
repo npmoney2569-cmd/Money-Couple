@@ -34,6 +34,8 @@ import {
   Heart,
   Home,
   FileText,
+  Menu,
+  X,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -107,6 +109,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
   const [partnerSharePercent, setPartnerSharePercent] = useState<number>(50);
   const [sharedGoalText, setSharedGoalText] = useState<string>("เป้าหมายร่วม");
   const [sharedGoalPercent, setSharedGoalPercent] = useState<number>(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     async function loadCoupleStatus() {
@@ -275,8 +278,60 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
             <ThemeToggle variant="topbar" />
             <span className={styles.chip}>{email ?? "guest"}</span>
             <LogoutButton />
+            {/* Mobile menu button — shown only on mobile */}
+            <button
+              className={styles.menuBtn}
+              onClick={() => setDrawerOpen(true)}
+              aria-label="เปิดเมนู"
+            >
+              <Menu size={22} />
+            </button>
           </div>
         </header>
+
+        {/* Mobile Drawer Overlay */}
+        {drawerOpen && (
+          <div className={styles.drawerOverlay} onClick={() => setDrawerOpen(false)} />
+        )}
+
+        {/* Mobile Drawer */}
+        <div className={`${styles.drawer} ${drawerOpen ? styles.drawerOpen : ""}`}>
+          <div className={styles.drawerHeader}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <img src="/LOGO.png" alt="Logo" style={{ height: 28, width: "auto", borderRadius: 6 }} />
+              <span style={{ fontWeight: 700, fontSize: 16 }}>Money Couple</span>
+            </div>
+            <button className={styles.drawerClose} onClick={() => setDrawerOpen(false)}>
+              <X size={22} />
+            </button>
+          </div>
+          <div className={styles.drawerBody}>
+            {menuGroups.map((group) => (
+              <section key={group.title} style={{ marginBottom: 16 }}>
+                <p className={styles.drawerGroupTitle}>{group.title}</p>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={`${styles.drawerItem} ${active ? styles.drawerItemActive : ""}`}
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      <Icon size={18} />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </section>
+            ))}
+          </div>
+          <div className={styles.drawerFooter}>
+            <ThemeToggle variant="sidebar" />
+            <LogoutButton />
+          </div>
+        </div>
 
         <div className={styles.content}>{children}</div>
       </div>

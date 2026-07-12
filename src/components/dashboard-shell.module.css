@@ -380,3 +380,148 @@
   background: #ff6580;
 }
 
+/* ── Mobile hamburger button (hidden on desktop) ── */
+.menuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(137, 167, 255, 0.25);
+  background: rgba(38, 73, 145, 0.25);
+  color: #e8f1ff;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.menuBtn:hover {
+  background: rgba(74, 126, 255, 0.3);
+}
+
+@media (max-width: 1120px) {
+  .menuBtn {
+    display: flex;
+  }
+}
+
+/* ── Drawer overlay ── */
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Drawer panel ── */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  max-width: 85vw;
+  height: 100dvh;
+  background: var(--bg-sidebar, #0d1529);
+  border-left: 1px solid rgba(137, 167, 255, 0.18);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+/* ── Drawer header ── */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(137, 167, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.drawerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(137, 167, 255, 0.2);
+  background: rgba(38, 73, 145, 0.2);
+  color: #e8f1ff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.drawerClose:hover {
+  background: rgba(255, 101, 128, 0.2);
+  border-color: rgba(255, 101, 128, 0.3);
+  color: #ff6580;
+}
+
+/* ── Drawer body (scrollable menu) ── */
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+}
+
+.drawerGroupTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a8caa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 8px 8px;
+}
+
+.drawerItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #c8d8f8;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: 120ms ease;
+  text-decoration: none;
+}
+
+.drawerItem:hover {
+  background: rgba(50, 90, 181, 0.25);
+  border-color: rgba(137, 167, 255, 0.22);
+}
+
+.drawerItemActive {
+  background: linear-gradient(90deg, rgba(74, 126, 255, 0.35), rgba(73, 128, 255, 0.12));
+  border-color: rgba(134, 168, 255, 0.32);
+  color: #f3f7ff;
+}
+
+/* ── Drawer footer ── */
+.drawerFooter {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(137, 167, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
