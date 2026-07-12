@@ -1,3 +1,7 @@
+ï»¿*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   --background: #fafaf5;
   --foreground: #10221b;
@@ -91,7 +95,7 @@ html {
   background: linear-gradient(180deg, rgba(173, 204, 255, 0.82), rgba(126, 167, 255, 0.76));
 }
 
-/* ÄÄ PDF / Print optimisation (reports page) ÄÄ */
+/* ï¿½ï¿½ PDF / Print optimisation (reports page) ï¿½ï¿½ */
 @media print {
   body { background: white !important; color: black !important; }
   nav, aside, .no-print { display: none !important; }

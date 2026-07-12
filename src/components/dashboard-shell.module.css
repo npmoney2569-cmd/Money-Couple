@@ -87,6 +87,7 @@
 .main {
   display: grid;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -125,6 +126,9 @@
 
 .content {
   padding: 18px 20px 100px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .mobileNav {
@@ -204,6 +208,11 @@
 
   .content {
     padding: 14px 12px 96px;
+  }
+
+  /* Hide email chip on small screens to save space */
+  .chip {
+    display: none;
   }
 
   .mobileNav {

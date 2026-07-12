@@ -4,6 +4,8 @@
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .header {
@@ -42,6 +44,8 @@
 .input,
 .select {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid rgba(139, 170, 255, 0.24);
@@ -103,7 +107,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 18px;
-  min-width: 760px;
+  min-width: 560px;
 }
 
 .tableWrap {
@@ -179,7 +183,7 @@
   }
 
   .table {
-    min-width: 480px;
+    min-width: 340px;
     margin-top: 0;
   }
 
