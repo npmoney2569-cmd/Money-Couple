@@ -112,7 +112,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
           });
 
           if (resolveError) {
-            setMessage("ยังไม่รองรับการล็อกอินด้วย Username กรุณาใช้อีเมล หรือให้แอดมินรันสคริปต์ username-auth");
+            console.error("resolve_login_email error:", resolveError);
+            setMessage(`เข้าสู่ระบบด้วย Username ไม่สำเร็จ: ${resolveError.message}`);
             setLoading(false);
             return;
           }
