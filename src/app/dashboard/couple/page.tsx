@@ -299,6 +299,23 @@ export default function CoupleHubPage() {
     if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการสลายความสัมพันธ์คู่รัก? (ข้อมูลหารค่าใช้จ่ายและงบประมาณร่วมทั้งหมดจะถูกลบออก)")) return;
 
     setLoading(true);
+
+    // Step 1: Find all shared accounts (couple_id = coupleId)
+    const { data: sharedAccounts } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("couple_id", coupleId);
+
+    // Step 2: Null-ify account_id in transactions referencing shared accounts
+    if (sharedAccounts && sharedAccounts.length > 0) {
+      const sharedAccountIds = sharedAccounts.map((a) => a.id);
+      await supabase
+        .from("transactions")
+        .update({ account_id: null })
+        .in("account_id", sharedAccountIds);
+    }
+
+    // Step 3: Delete the couple (cascades to couple_members, couple_splits, shared accounts etc.)
     const { error } = await supabase
       .from("couples")
       .delete()
