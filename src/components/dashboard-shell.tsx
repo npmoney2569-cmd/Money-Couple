@@ -143,26 +143,24 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
         }
       }
 
-      // Fetch net balance (income - expense) for each member
+      // Fetch total account balance per member
+      const partnerUid = allMembers?.find(m => m.user_id !== user.id)?.user_id;
       const memberIds = allMembers?.map(m => m.user_id) || [];
       if (memberIds.length > 0) {
-        const { data: txs } = await supabase
-          .from("transactions")
-          .select("user_id, type, amount")
+        const { data: accs } = await supabase
+          .from("accounts")
+          .select("user_id, balance")
           .in("user_id", memberIds)
-          .is("deleted_at", null)
-          .neq("type", "transfer");
+          .is("deleted_at", null);
 
-        let myNet = 0;
-        let partnerNet = 0;
-        const partnerId = allMembers?.find(m => m.user_id !== user.id)?.user_id;
-        txs?.forEach(tx => {
-          const delta = tx.type === "income" ? Number(tx.amount) : -Number(tx.amount);
-          if (tx.user_id === user.id) myNet += delta;
-          else if (tx.user_id === partnerId) partnerNet += delta;
+        let myTotal = 0;
+        let partnerTotal = 0;
+        accs?.forEach(acc => {
+          if (acc.user_id === user.id) myTotal += Number(acc.balance);
+          else if (acc.user_id === partnerUid) partnerTotal += Number(acc.balance);
         });
-        setUserNetBalance(myNet);
-        setPartnerNetBalance(partnerNet);
+        setUserNetBalance(myTotal);
+        setPartnerNetBalance(partnerTotal);
       }
 
       // Fetch shared accounts balance
@@ -334,6 +332,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
           </div>
 
           <div className={styles.coupleProgressBox}>
+            <div style={{ fontSize: 11, color: "#8a8fa8", marginBottom: 6, fontWeight: 500, letterSpacing: "0.03em" }}>เงินคงเหลือทั้งหมด</div>
             <div className={styles.userProgressItem}>
               <div className={styles.userMiniAvatar}>
                 {userName[0].toUpperCase()}
@@ -344,11 +343,11 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
                   <span style={{ color: userNetBalance !== null && userNetBalance >= 0 ? "#2ee3a8" : "#ff6580", fontWeight: 600 }}>
                     {userNetBalance !== null
                       ? new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 0 }).format(userNetBalance)
-                      : `${userSharePercent}%`}
+                      : "-"}
                   </span>
                 </div>
                 <div className={styles.progressBarTrack}>
-                  <div className={styles.progressBarFillUser} style={{ width: `${userSharePercent}%` }} />
+                  <div className={styles.progressBarFillUser} style={{ width: userNetBalance !== null && partnerNetBalance !== null && (userNetBalance + partnerNetBalance) > 0 ? `${Math.round((userNetBalance / (userNetBalance + partnerNetBalance)) * 100)}%` : "50%" }} />
                 </div>
               </div>
             </div>
@@ -363,11 +362,11 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
                   <span style={{ color: partnerNetBalance !== null && partnerNetBalance >= 0 ? "#2ee3a8" : "#ff6580", fontWeight: 600 }}>
                     {partnerNetBalance !== null
                       ? new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 0 }).format(partnerNetBalance)
-                      : `${partnerSharePercent}%`}
+                      : "-"}
                   </span>
                 </div>
                 <div className={styles.progressBarTrack}>
-                  <div className={styles.progressBarFillPartner} style={{ width: `${partnerSharePercent}%` }} />
+                  <div className={styles.progressBarFillPartner} style={{ width: userNetBalance !== null && partnerNetBalance !== null && (userNetBalance + partnerNetBalance) > 0 ? `${Math.round((partnerNetBalance / (userNetBalance + partnerNetBalance)) * 100)}%` : "50%" }} />
                 </div>
               </div>
             </div>
