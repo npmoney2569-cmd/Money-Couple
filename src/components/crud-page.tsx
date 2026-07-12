@@ -17,6 +17,8 @@ export type FieldDef = {
   optionsQuery?: {
     table: string;
     labelKey: string;
+    labelKeys?: string[];
+    labelSeparator?: string;
     valueKey: string;
     filter?: Record<string, string | number | boolean>;
     orderBy?: string;
@@ -110,9 +112,8 @@ export default function CrudPage({
         const resolved = await Promise.all(
           queryFields.map(async (field) => {
             const queryDef = field.optionsQuery!;
-            let query = supabase.from(queryDef.table as any).select(
-              `${queryDef.valueKey},${queryDef.labelKey}`
-            );
+            const selectCols = [queryDef.valueKey, queryDef.labelKey, ...(queryDef.labelKeys ?? [])].join(",");
+            let query = supabase.from(queryDef.table as any).select(selectCols);
 
             if (queryDef.filter) {
               Object.entries(queryDef.filter).forEach(([key, value]) => {
@@ -132,10 +133,18 @@ export default function CrudPage({
             return {
               key: field.key,
               options: Array.isArray(data)
-                ? data.map((row) => ({
-                    label: String((row as any)[queryDef.labelKey] ?? ""),
-                    value: (row as any)[queryDef.valueKey] ?? "",
-                  }))
+                ? data.map((row) => {
+                    const r = row as any;
+                    let label = String(r[queryDef.labelKey] ?? "");
+                    if (queryDef.labelKeys && queryDef.labelKeys.length > 0) {
+                      const sep = queryDef.labelSeparator ?? " ";
+                      const extras = queryDef.labelKeys
+                        .map((k) => r[k])
+                        .filter((v) => v !== null && v !== undefined && v !== "");
+                      if (extras.length > 0) label += sep + extras.join(sep);
+                    }
+                    return { label, value: r[queryDef.valueKey] ?? "" };
+                  })
                 : [],
             };
           })

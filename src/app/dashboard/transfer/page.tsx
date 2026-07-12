@@ -1,4 +1,4 @@
-﻿import CrudPage from "@/components/crud-page";
+import CrudPage from "@/components/crud-page";
 
 export default function TransferPage() {
   return (
@@ -18,7 +18,7 @@ export default function TransferPage() {
           type: "select",
           required: true,
           placeholder: "เลือกบัญชีต้นทาง",
-          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
+          optionsQuery: { table: "accounts_with_username", labelKey: "name", labelKeys: ["username"], labelSeparator: " · @", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
         },
         {
           key: "to_account_id",
@@ -26,7 +26,7 @@ export default function TransferPage() {
           type: "select",
           required: true,
           placeholder: "เลือกบัญชีปลายทาง",
-          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
+          optionsQuery: { table: "accounts_with_username", labelKey: "name", labelKeys: ["username"], labelSeparator: " · @", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
         },
         { key: "fee_amount", label: "ค่าธรรมเนียม", type: "number", placeholder: "0" },
         { key: "note", label: "โน้ต", type: "textarea" },
