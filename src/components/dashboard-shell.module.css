@@ -115,6 +115,13 @@
   gap: 12px;
 }
 
+.topRightActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
 .chip {
   border-radius: 999px;
   border: 1px solid rgba(157, 185, 255, 0.36);

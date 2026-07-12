@@ -277,15 +277,17 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
           <div className={styles.topRight}>
             <ThemeToggle variant="topbar" />
             <span className={styles.chip}>{email ?? "guest"}</span>
-            <LogoutButton />
-            {/* Mobile menu button — shown only on mobile */}
-            <button
-              className={styles.menuBtn}
-              onClick={() => setDrawerOpen(true)}
-              aria-label="เปิดเมนู"
-            >
-              <Menu size={22} />
-            </button>
+            <div className={styles.topRightActions}>
+              {/* Mobile menu button — shown only on mobile */}
+              <button
+                className={styles.menuBtn}
+                onClick={() => setDrawerOpen(true)}
+                aria-label="เปิดเมนู"
+              >
+                <Menu size={22} />
+              </button>
+              <LogoutButton />
+            </div>
           </div>
         </header>
 
