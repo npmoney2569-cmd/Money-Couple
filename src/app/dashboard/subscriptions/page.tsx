@@ -1,4 +1,4 @@
-﻿import CrudPage from "@/components/crud-page";
+import CrudPage from "@/components/crud-page";
 
 export default function SubscriptionsPage() {
   return (
@@ -21,7 +21,7 @@ export default function SubscriptionsPage() {
           label: "บัญชีตัดจ่าย",
           type: "select",
           placeholder: "เลือกบัญชี (ถ้ามี)",
-          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
+          optionsQuery: { table: "accounts", labelKey: "name", labelKeys: ["users(display_name)"], labelSeparator: " - ", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
         },
         {
           key: "category_id",

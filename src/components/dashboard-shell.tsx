@@ -38,6 +38,8 @@ import {
   X,
   Bot,
   BrainCircuit,
+  Download,
+  Award,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -71,6 +73,7 @@ const menuGroups: MenuGroup[] = [
       { label: "สินทรัพย์", href: "/dashboard/assets", icon: Gem },
       { label: "บิล / Subscription", href: "/dashboard/subscriptions", icon: Receipt },
       { label: "รายการประจำ", href: "/dashboard/recurring", icon: RefreshCw },
+      { label: "นำเข้าข้อมูล", href: "/dashboard/import", icon: Download },
     ],
   },
   {
@@ -79,6 +82,7 @@ const menuGroups: MenuGroup[] = [
       { label: "รายงาน", href: "/dashboard/reports", icon: BarChart3 },
       { label: "ปฏิทิน", href: "/dashboard/calendar", icon: Calendar },
       { label: "AI ผู้ช่วยการเงิน", href: "/dashboard/ai-advisor", icon: BrainCircuit },
+      { label: "สุขภาพการเงิน", href: "/dashboard/health", icon: Award },
       { label: "ค้นหา / กรอง", href: "/dashboard/search", icon: Search },
     ],
   },

@@ -172,6 +172,7 @@ export async function getDashboardData() {
     assetsRes,
     billsRes,
     notificationsRes,
+    gamificationRes,
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -206,6 +207,11 @@ export async function getDashboardData() {
       .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("gamification_stats")
+      .select("current_streak,health_score,points")
+      .eq("user_id", user?.id ?? "")
+      .maybeSingle(),
   ]);
 
   const warnings: string[] = [];
@@ -223,6 +229,7 @@ export async function getDashboardData() {
   collect("assets", assetsRes.error);
   collect("bills_subscriptions", billsRes.error);
   collect("notifications", notificationsRes.error);
+  collect("gamification", gamificationRes.error);
 
   const allTx = (txRes.data ?? []) as TxRow[];
   const currentTx = allTx.filter((t) => t.date >= monthStart && t.date <= monthEnd);
@@ -236,6 +243,7 @@ export async function getDashboardData() {
   const assets = (assetsRes.data ?? []) as Array<{ current_value: number | string }>;
   const bills = (billsRes.data ?? []) as BillRow[];
   const notifications = (notificationsRes.data ?? []) as NotificationRow[];
+  const gamification = gamificationRes.data ?? { current_streak: 0, health_score: 50, points: 0 };
 
   const income = currentTx.filter((t) => t.type === "income").reduce((s, t) => s + num(t.amount), 0);
   const expense = currentTx.filter((t) => t.type === "expense").reduce((s, t) => s + num(t.amount), 0);
@@ -329,5 +337,6 @@ export async function getDashboardData() {
     goalTop,
     debtTop,
     trendData,
+    gamification,
   };
 }

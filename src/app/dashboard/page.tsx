@@ -11,6 +11,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Receipt,
+  Flame,
 } from "lucide-react";
 
 function deltaText(value: number) {
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
     { title: "เงินออม (เดือนนี้)", value: thb(data.kpis.savings), sub: "คำนวณจากรายรับ - รายจ่าย", positive: true, icon: PiggyBank, iconColor: "purple" },
     { title: "หนี้คงค้าง", value: thb(data.kpis.totalDebt), sub: "จากตาราง debts", icon: HandCoins, iconColor: "orange" },
     { title: "Net Worth", value: thb(data.kpis.netWorth), sub: "บัญชี + สินทรัพย์ - หนี้", positive: data.kpis.netWorth >= 0, icon: Scale, iconColor: "cyan" },
+    { title: "Current Streak", value: `${data.gamification.current_streak} วัน`, sub: `Score: ${data.gamification.health_score} | Points: ${data.gamification.points}`, positive: true, icon: Flame, iconColor: "orange" },
   ];
 
   const maxPie = data.expenseSplit.reduce((m, i) => Math.max(m, i.amount), 0) || 1;

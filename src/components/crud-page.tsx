@@ -139,7 +139,14 @@ export default function CrudPage({
                     if (queryDef.labelKeys && queryDef.labelKeys.length > 0) {
                       const sep = queryDef.labelSeparator ?? " ";
                       const extras = queryDef.labelKeys
-                        .map((k) => r[k])
+                        .map((k) => {
+                          if (k.includes('(')) {
+                            const table = k.split('(')[0];
+                            const field = k.split('(')[1].replace(')', '');
+                            return r[table]?.[field];
+                          }
+                          return r[k];
+                        })
                         .filter((v) => v !== null && v !== undefined && v !== "");
                       if (extras.length > 0) label += sep + extras.join(sep);
                     }

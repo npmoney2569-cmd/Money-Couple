@@ -28,7 +28,7 @@ export default function ExpensePage() {
           type: "select",
           required: true,
           placeholder: "เลือกบัญชี",
-          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
+          optionsQuery: { table: "accounts", labelKey: "name", labelKeys: ["users(display_name)"], labelSeparator: " - ", valueKey: "id", filter: { is_active: true }, orderBy: "name", orderAscending: true },
         },
         {
           key: "tag_ids",
