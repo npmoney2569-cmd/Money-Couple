@@ -107,6 +107,11 @@
 - [x] ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง
 - [x] เชื่อม localStorage + CSS variables
 
+### 🟢 ลำดับ 9: Account Bank Icons
+- [x] เพิ่มการเลือกโลโก้ธนาคาร / ไอคอน (Presets) ในหน้าบัญชี
+- [x] รองรับการอัปโหลดโลโก้เองลงใน Supabase Storage
+- [x] แสดงผลบนหน้า Dashboard และ Accounts list อย่างสวยงาม
+
 ---
 
 ## Phase 3 — Couple Mode & LINE Bot & OAuth (ทำทีหลังสุด)
@@ -131,9 +136,9 @@
 - [ ] AI วิเคราะห์การเงิน + Forecast
 - [ ] Multi Currency
 - [ ] Offline Sync
-- [ ] Import Statement ธนาคาร (CSV/Excel)
-- [ ] Financial Health Score
-- [ ] Gamification (Streak, Badge)
+- [x] Import Statement ธนาคาร (CSV/Excel)
+- [x] Financial Health Score
+- [x] Gamification (Streak, Badge)
 - [ ] Apple Login
 - [ ] Capacitor wrap → App Store / Play Store
 
@@ -145,9 +150,9 @@
 Phase 1 (MVP Core):         ██████████████████████  100% เสร็จสิ้น
 Phase 2 (Extended):         ████████████████░░░░░░   75% เสร็จสิ้น
 Phase 3 (Couple+LINE+OAuth): ████████████████░░░░░   80% เสร็จสิ้น (รอเปิดใช้ Google OAuth, 2FA, PIN)
-Phase 4 (AI/OCR/Advanced):   ██░░░░░░░░░░░░░░░░░░   10%
+Phase 4 (AI/OCR/Advanced):   ████████░░░░░░░░░░░░   40%
 ───────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:         ████████████████░░░░░  ~80%
+ภาพรวมทั้งโปรเจกต์:         █████████████████░░░░  ~85%
 ```
 
 ---
