@@ -36,6 +36,8 @@ import {
   FileText,
   Menu,
   X,
+  Bot,
+  BrainCircuit,
 } from "lucide-react";
 
 type DashboardShellProps = {
@@ -76,6 +78,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { label: "รายงาน", href: "/dashboard/reports", icon: BarChart3 },
       { label: "ปฏิทิน", href: "/dashboard/calendar", icon: Calendar },
+      { label: "AI ผู้ช่วยการเงิน", href: "/dashboard/ai-advisor", icon: BrainCircuit },
       { label: "ค้นหา / กรอง", href: "/dashboard/search", icon: Search },
     ],
   },
