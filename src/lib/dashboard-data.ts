@@ -176,30 +176,34 @@ export async function getDashboardData() {
     supabase
       .from("transactions")
       .select("id,type,amount,date,merchant,payee,note,category_id,account_id,created_at")
+      .eq("user_id", user?.id ?? "")
       .gte("date", sixMonthsAgoStart)
       .lte("date", monthEnd)
       .is("deleted_at", null),
     supabase
       .from("transactions")
       .select("id,type,amount,date,merchant,payee,note,category_id,account_id,created_at")
+      .eq("user_id", user?.id ?? "")
       .is("deleted_at", null)
       .order("date", { ascending: false })
       .limit(8),
     supabase.from("accounts").select("id,name,balance").eq("is_active", true).eq("user_id", user?.id ?? "").order("name"),
-    supabase.from("categories").select("id,name,type"),
-    supabase.from("budgets").select("id,amount,period").order("start_date", { ascending: false }).limit(6),
-    supabase.from("goals").select("id,name,target_amount,current_amount").order("created_at", { ascending: false }).limit(4),
-    supabase.from("debts").select("id,counterparty,principal").order("created_at", { ascending: false }).limit(4),
-    supabase.from("assets").select("id,current_value").limit(200),
+    supabase.from("categories").select("id,name,type"), // categories uses RLS for user_id and preset
+    supabase.from("budgets").select("id,amount,period").eq("user_id", user?.id ?? "").order("start_date", { ascending: false }).limit(6),
+    supabase.from("goals").select("id,name,target_amount,current_amount").eq("user_id", user?.id ?? "").order("created_at", { ascending: false }).limit(4),
+    supabase.from("debts").select("id,counterparty,principal").eq("user_id", user?.id ?? "").order("created_at", { ascending: false }).limit(4),
+    supabase.from("assets").select("id,current_value").eq("user_id", user?.id ?? "").limit(200),
     supabase
       .from("bills_subscriptions")
       .select("id,name,amount,due_day,type,is_active")
+      .eq("user_id", user?.id ?? "")
       .eq("is_active", true)
       .order("due_day", { ascending: true })
       .limit(5),
     supabase
       .from("notifications")
       .select("id,title,body,is_read,created_at")
+      .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
