@@ -10,6 +10,23 @@ function getThDate(): Date {
   return new Date(utc + 3600000 * 7);
 }
 
+// Helper to download image from LINE
+async function getLineImageBuffer(messageId: string): Promise<Buffer | null> {
+  const token = process.env.LINE_BOT_CHANNEL_ACCESS_TOKEN;
+  if (!token) return null;
+  try {
+    const res = await fetch(`https://api-data.line.me/v2/bot/message/${messageId}/content`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (e) {
+    console.error("Error fetching LINE image", e);
+    return null;
+  }
+}
+
 // Helper to reply back to LINE user
 async function replyMessage(replyToken: string, text: string, quickReplyItems?: any[]) {
   const channelAccessToken = process.env.LINE_BOT_CHANNEL_ACCESS_TOKEN || "";
@@ -84,13 +101,14 @@ export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
 
   for (const event of events) {
-    if (event.type !== "message" || event.message.type !== "text") {
+    const messageType = event?.message?.type;
+    if (event.type !== "message" || (messageType !== "text" && messageType !== "image")) {
       continue;
     }
 
     const replyToken = event.replyToken;
     const lineUserId = event.source.userId;
-    const userMessage = event.message.text.trim();
+    const userMessage = messageType === "text" ? event.message.text.trim() : "";
 
     if (!lineUserId || !replyToken) continue;
 
@@ -121,7 +139,7 @@ export async function POST(request: NextRequest) {
       // 4. Command Router
 
       // Command A: Delete recent transaction e.g., "ลบ #1"
-      const deleteMatch = userMessage.match(/^ลบ\s*#([1-5])$/i);
+      const deleteMatch = messageType === "text" ? userMessage.match(/^ลบ\s*#([1-5])$/i) : null;
       if (deleteMatch) {
         const index = parseInt(deleteMatch[1], 10) - 1; // 0-indexed index
 
@@ -165,7 +183,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Command B: Report / Summary e.g., "สรุป", "สรุปวันนี้", "สรุปเดือนนี้"
-      const lowerMsg = userMessage.toLowerCase();
+      const lowerMsg = messageType === "text" ? userMessage.toLowerCase() : "";
       if (lowerMsg === "สรุป" || lowerMsg === "สรุปวันนี้" || lowerMsg === "สรุปเดือนนี้" || lowerMsg === "summary" || lowerMsg === "report") {
         const thDate = getThDate();
         const todayStr = thDate.toISOString().split("T")[0];
@@ -252,7 +270,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Command E: Confirm Pending Account Select e.g., "เลือกบัญชี: บัญชีเงินฝากออมทรัพย์"
-      const accountMatch = userMessage.match(/^(?:เลือกบัญชี|บันทึกเข้าบัญชี)[:\s]+(.+)$/i);
+      const accountMatch = messageType === "text" ? userMessage.match(/^(?:เลือกบัญชี|บันทึกเข้าบัญชี)[:\s]+(.+)$/i) : null;
       if (accountMatch) {
         const targetAccountName = accountMatch[1].trim();
 
@@ -378,7 +396,7 @@ export async function POST(request: NextRequest) {
       let type: "income" | "expense" = "expense";
       let matchedCategory = null;
       let targetAccount = null;
-      let cleanText = userMessage;
+      let cleanText = userMessage || "สลิป/ใบเสร็จ";
 
       if (apiKey) {
         // AI Parsing Path
@@ -386,9 +404,7 @@ export async function POST(request: NextRequest) {
         const categoriesList = cats?.map(c => `- ${c.name} (type: ${c.type})`).join('\n') || '';
         const accountsList = accounts?.map(a => `- ${a.name}`).join('\n') || '';
         
-        const prompt = `You are a smart Thai personal finance assistant.
-Parse this user message: "${userMessage}"
-
+        let prompt = `You are a smart Thai personal finance assistant.
 Available Categories:
 ${categoriesList}
 
@@ -413,9 +429,25 @@ JSON format:
 }`;
 
         try {
+          let aiContent: any[] = [];
+          
+          if (messageType === "image") {
+             const imageBuffer = await getLineImageBuffer(event.message.id);
+             if (!imageBuffer) throw new Error("Could not download image from LINE");
+             
+             prompt = prompt + `\n\nPlease extract the transaction details from this receipt or bank slip image.`;
+             aiContent = [
+               { text: prompt },
+               { inlineData: { data: imageBuffer.toString("base64"), mimeType: "image/jpeg" } }
+             ];
+          } else {
+             prompt = prompt + `\n\nParse this user message: "${userMessage}"`;
+             aiContent = [{ text: prompt }];
+          }
+
           const response = await ai.models.generateContent({
              model: 'gemini-2.5-flash',
-             contents: prompt
+             contents: aiContent
           });
           
           const rawText = (response.text || "").trim();
@@ -440,6 +472,11 @@ JSON format:
       }
 
       if (!apiKey || isNaN(amount) || amount <= 0) {
+        if (messageType === "image") {
+          await replyMessage(replyToken, "ขออภัยครับ การอ่านรูปภาพต้องใช้ AI แต่คุณยังไม่ได้ใส่ API Key หรือ AI อาจมีปัญหาครับ");
+          continue;
+        }
+
         // Legacy Pattern Parsing Path (Fallback)
         const cleanInput = userMessage.replace(/,/g, "");
         const amountMatch = cleanInput.match(/(\d+(?:\.\d+)?)/);
