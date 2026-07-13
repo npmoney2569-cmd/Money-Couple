@@ -1,3 +1,5 @@
+"use client";
+
 import CrudPage from "@/components/crud-page";
 import { BankIcon, BANK_PRESETS } from "@/components/bank-icon";
 
