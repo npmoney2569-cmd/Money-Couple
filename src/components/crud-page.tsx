@@ -182,6 +182,9 @@ export default function CrudPage({
     const to = from + pageSize - 1;
 
     let query = supabase.from(table as any).select("*", { count: "exact" });
+    if (table === "transactions") {
+      query = query.is("deleted_at", null);
+    }
     if (filter) {
       if (filter.value === null) {
         query = query.is(filter.field, null);
@@ -375,7 +378,16 @@ export default function CrudPage({
   async function handleDelete(id: unknown) {
     if (!confirm("ลบรายการนี้ใช่หรือไม่?")) return;
     setLoading(true);
-    const { error } = await supabase.from(table as any).delete().eq("id", id);
+    
+    let error;
+    if (table === "transactions") {
+      const result = await supabase.from(table).update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      error = result.error;
+    } else {
+      const result = await supabase.from(table as any).delete().eq("id", id);
+      error = result.error;
+    }
+    
     setLoading(false);
     if (error) {
       setStatus(`ลบข้อมูลไม่สำเร็จ: ${error.message}`);
