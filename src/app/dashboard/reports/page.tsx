@@ -58,6 +58,7 @@ function diffLabel(current: number, prev: number): { text: string; positive: boo
 
 export default async function ReportsPage() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const now = new Date();
 
   // Current month range
@@ -77,15 +78,19 @@ export default async function ReportsPage() {
 
   const [txRes, prevTxRes, yearTxRes, prevYearTxRes, catRes, accountsRes] = await Promise.all([
     supabase.from("transactions").select("id,date,type,amount,category_id,account_id,merchant,payee,note,source")
+      .eq("user_id", user?.id ?? "")
       .gte("date", monthStart).lte("date", monthEnd).is("deleted_at", null).order("date", { ascending: false }),
     supabase.from("transactions").select("type,amount")
+      .eq("user_id", user?.id ?? "")
       .gte("date", prevMonthStart).lte("date", prevMonthEnd).is("deleted_at", null),
     supabase.from("transactions").select("type,amount")
+      .eq("user_id", user?.id ?? "")
       .gte("date", yearStart).lte("date", yearEnd).is("deleted_at", null),
     supabase.from("transactions").select("type,amount")
+      .eq("user_id", user?.id ?? "")
       .gte("date", prevYearStart).lte("date", prevYearEnd).is("deleted_at", null),
     supabase.from("categories").select("id,name"),
-    supabase.from("accounts").select("id,name,balance").eq("is_active", true),
+    supabase.from("accounts").select("id,name,balance").eq("is_active", true).eq("user_id", user?.id ?? ""),
   ]);
 
   const transactions = (txRes.data ?? []) as TransactionRow[];

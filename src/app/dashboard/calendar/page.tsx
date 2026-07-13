@@ -84,6 +84,8 @@ export default function CalendarPage() {
     setLoading(true);
     setSelectedDay(null);
 
+    const { data: { user } } = await supabase.auth.getUser();
+
     const start = toLocalDateStr(firstDay);
     const end = toLocalDateStr(lastDay);
 
@@ -91,8 +93,10 @@ export default function CalendarPage() {
       supabase
         .from("transactions")
         .select("id,date,type,amount,note,merchant,payee,category_id")
+        .eq("user_id", user?.id ?? "")
         .gte("date", start)
         .lte("date", end)
+        .is("deleted_at", null)
         .order("date", { ascending: true }),
       supabase
         .from("categories")
