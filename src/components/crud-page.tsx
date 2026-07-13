@@ -478,7 +478,7 @@ export default function CrudPage({
                 {form[field.key] ? (
                   <div className={styles.filePreview}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={String(form[field.key])} alt="Receipt preview" className={styles.thumbnail} />
+                    <img src={String(form[field.key])} alt="Uploaded preview" className={styles.thumbnail} />
                     <button
                       type="button"
                       className={styles.deleteFileBtn}
@@ -495,7 +495,7 @@ export default function CrudPage({
                       const file = event.target.files?.[0];
                       if (!file) return;
 
-                      setStatus("กำลังอัปโหลดรูปภาพใบเสร็จ...");
+                      setStatus("กำลังอัปโหลดรูปภาพ...");
                       try {
                         const { data: { user } } = await supabase.auth.getUser();
                         if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อนอัปโหลด");
@@ -514,7 +514,7 @@ export default function CrudPage({
                           .getPublicUrl(fileName);
 
                         updateFormValue(field.key, publicUrl);
-                        setStatus("อัปโหลดใบเสร็จสำเร็จ! กดบันทึกเพื่อบันทึกรายการ");
+                        setStatus("อัปโหลดสำเร็จ! กดบันทึกเพื่อบันทึกรายการ");
                       } catch (err: any) {
                         setStatus(`อัปโหลดล้มเหลว: ${err.message}`);
                       }
