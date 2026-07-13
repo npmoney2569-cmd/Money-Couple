@@ -1,6 +1,7 @@
 import styles from "./dashboard.module.css";
 import { getDashboardData, thb } from "@/lib/dashboard-data";
 import QuickRecordWidget from "@/components/quick-record-widget";
+import { BankIcon } from "@/components/bank-icon";
 import {
   Wallet,
   ArrowDown,
@@ -259,10 +260,8 @@ export default async function DashboardPage() {
             {data.accounts.map((acc) => (
               <li key={acc.name} className={styles.row}>
                 <div className={styles.rowLeft}>
-                  <div className={`${styles.rowIcon} ${styles.bgBlue}`}>
-                    <Wallet size={16} />
-                  </div>
-                  <span>{acc.name}</span>
+                  <BankIcon preset={acc.bank_preset as string} url={acc.icon_url as string} size={28} />
+                  <span style={{ marginLeft: 8 }}>{acc.name}</span>
                 </div>
                 <span className={Number(acc.balance) < 0 ? styles.bad : styles.strong}>{thb(Number(acc.balance))}</span>
               </li>

@@ -29,7 +29,7 @@ export type FieldDef = {
 type ColumnDef = {
   key: string;
   label: string;
-  render?: (value: unknown) => ReactNode;
+  render?: (value: unknown, row: Record<string, unknown>) => ReactNode;
 };
 
 type CrudPageProps = {
@@ -569,7 +569,7 @@ export default function CrudPage({
               rows.map((row) => (
                 <tr key={String(row.id)}>
                   {columns.map((col) => (
-                    <td key={`${String(row.id)}-${col.key}`}>{col.render ? col.render(row[col.key]) : renderCellValue(row, col.key, row[col.key])}</td>
+                    <td key={`${String(row.id)}-${col.key}`}>{col.render ? col.render(row[col.key], row) : renderCellValue(row, col.key, row[col.key])}</td>
                   ))}
                   <td className={styles.rowActions}>
                     <button type="button" className={styles.editButton} onClick={() => handleEdit(row)}>
@@ -594,7 +594,7 @@ export default function CrudPage({
           rows.map((row) => (
             <div key={String(row.id)} className={styles.mobileCard}>
               {columns.map((col) => {
-                const val = col.render ? col.render(row[col.key]) : renderCellValue(row, col.key, row[col.key]);
+                const val = col.render ? col.render(row[col.key], row) : renderCellValue(row, col.key, row[col.key]);
                 if (val === null || val === undefined || val === "-" || val === "") return null;
                 return (
                   <div key={col.key} className={styles.mobileCardRow}>

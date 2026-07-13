@@ -17,6 +17,8 @@ type AccountRow = {
   id: string;
   name: string;
   balance: number | string;
+  bank_preset?: string | null;
+  icon_url?: string | null;
 };
 
 type CategoryRow = {
@@ -188,7 +190,7 @@ export async function getDashboardData() {
       .is("deleted_at", null)
       .order("date", { ascending: false })
       .limit(8),
-    supabase.from("accounts").select("id,name,balance").eq("is_active", true).eq("user_id", user?.id ?? "").order("name"),
+    supabase.from("accounts").select("id,name,balance,bank_preset,icon_url").eq("is_active", true).eq("user_id", user?.id ?? "").order("name"),
     supabase.from("categories").select("id,name,type"), // categories uses RLS for user_id and preset
     supabase.from("budgets").select("id,amount,period").eq("user_id", user?.id ?? "").order("start_date", { ascending: false }).limit(6),
     supabase.from("goals").select("id,name,target_amount,current_amount").eq("user_id", user?.id ?? "").order("created_at", { ascending: false }).limit(4),
