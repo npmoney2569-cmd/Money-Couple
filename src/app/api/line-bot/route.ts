@@ -1,6 +1,7 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { GoogleGenAI } from "@google/genai";
 
 // Helper to calculate Thailand date (UTC+7)
 function getThDate(): Date {
@@ -359,159 +360,170 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Command D: Quick Record transaction (e.g. "ค่าข้าว 150", "120 เดินทาง", "รายรับ ขายของ 500")
-      // Extract number/amount
-      const cleanInput = userMessage.replace(/,/g, "");
-      const amountMatch = cleanInput.match(/(\d+(?:\.\d+)?)/);
-      if (!amountMatch) {
-        await replyMessage(
-          replyToken,
-          `💡 คำแนะนำการใช้งานแชทบอท:\n\n1. บันทึกรายจ่าย: พิมพ์ชื่อรายการตามด้วยราคา (เช่น 'ค่าข้าว 150' หรือ '150 ค่ารถ')\n2. บันทึกรายรับ: พิมพ์คำว่า 'รายรับ' นำหน้า (เช่น 'รายรับ ขายของ 500')\n3. ดูสรุป: พิมพ์ 'สรุป'\n4. ดูประวัติล่าสุด: พิมพ์ 'ล่าสุด'\n5. ลบรายการผิด: พิมพ์ 'ลบ #1'`
-        );
-        continue;
-      }
-
-      const amount = parseFloat(amountMatch[1]);
-      const textPart = cleanInput.replace(amountMatch[0], "").trim();
-
-      if (!textPart) {
-        await replyMessage(replyToken, `กรุณาระบุรายละเอียดรายการด้วยครับ เช่น 'ค่าอาหาร ${amount}'`);
-        continue;
-      }
-
-      // Determine transaction type
-      const incomeKeywords = ["รายรับ", "รายได้", "ได้เงิน", "รับเงิน", "เงินเดือน", "income"];
-      let type: "income" | "expense" = "expense";
-      let cleanText = textPart;
-
-      for (const keyword of incomeKeywords) {
-        if (textPart.toLowerCase().startsWith(keyword)) {
-          type = "income";
-          cleanText = textPart.substring(keyword.length).trim();
-          break;
-        } else if (textPart.toLowerCase().endsWith(keyword)) {
-          type = "income";
-          cleanText = textPart.substring(0, textPart.length - keyword.length).trim();
-          break;
-        }
-      }
-
-      // Strip common expense prefixes if present (but keep the rest)
-      const expenseKeywords = ["รายจ่าย", "จ่าย", "ซื้อ", "ค่า", "expense"];
-      for (const keyword of expenseKeywords) {
-        if (cleanText.toLowerCase().startsWith(keyword) && cleanText.length > keyword.length) {
-          if (keyword === "จ่าย" || keyword === "ซื้อ") {
-            cleanText = cleanText.substring(keyword.length).trim();
-          }
-          break;
-        }
-      }
-
-      // Query categories for matching
-      const { data: cats } = await supabase
-        .from("categories")
-        .select("id, name, type")
-        .eq("type", type)
-        .or(`user_id.eq.${userId},user_id.is.null`);
-
-      let matchedCategory = null;
-
-      // 1. Exact match (case insensitive)
-      matchedCategory = cats?.find(c => c.name.toLowerCase() === cleanText.toLowerCase());
-
-      // 2. Smart keywords dictionary
-      if (!matchedCategory) {
-        const smartMap: { [key: string]: string } = {
-          "ข้าว": "อาหารและเครื่องดื่ม",
-          "อาหาร": "อาหารและเครื่องดื่ม",
-          "กิน": "อาหารและเครื่องดื่ม",
-          "น้ำ": "อาหารและเครื่องดื่ม",
-          "กาแฟ": "อาหารและเครื่องดื่ม",
-          "ชา": "อาหารและเครื่องดื่ม",
-          "นม": "อาหารและเครื่องดื่ม",
-          "ขนม": "อาหารและเครื่องดื่ม",
-          "รถ": "ค่าเดินทาง",
-          "เดินทาง": "ค่าเดินทาง",
-          "บีทีเอส": "ค่าเดินทาง",
-          "bts": "ค่าเดินทาง",
-          "mrt": "ค่าเดินทาง",
-          "เรือ": "ค่าเดินทาง",
-          "แท็กซี่": "ค่าเดินทาง",
-          "วิน": "ค่าเดินทาง",
-          "ค่าน้ำมัน": "ค่าเดินทาง",
-          "บ้าน": "ค่าที่พัก",
-          "ห้อง": "ค่าที่พัก",
-          "คอนโด": "ค่าที่พัก",
-          "โรงแรม": "ค่าที่พัก",
-          "ค่าเน็ต": "ค่าสาธารณูปโภค",
-          "เน็ต": "ค่าสาธารณูปโภค",
-          "ค่าไฟ": "ค่าสาธารณูปโภค",
-          "ค่าน้ำ": "ค่าสาธารณูปโภค",
-          "ค่าสาธารณูปโภค": "ค่าสาธารณูปโภค",
-          "โทรศัพท์": "ค่าสาธารณูปโภค",
-          "ช้อป": "ช้อปปิ้ง",
-          "ซื้อของ": "ช้อปปิ้ง",
-          "เสื้อผ้า": "ช้อปปิ้ง",
-          "ยา": "สุขภาพและความงาม",
-          "หมอ": "สุขภาพและความงาม",
-          "คลินิก": "สุขภาพและความงาม",
-          "หนัง": "บันเทิง",
-          "เที่ยว": "บันเทิง",
-          "เกม": "บันเทิง",
-          "หนังสือ": "การศึกษา"
-        };
-
-        for (const [key, catName] of Object.entries(smartMap)) {
-          if (cleanText.includes(key)) {
-            matchedCategory = cats?.find(c => c.name === catName);
-            if (matchedCategory) break;
-          }
-        }
-      }
-
-      // 3. Partial substring match
-      if (!matchedCategory) {
-        matchedCategory = cats?.find(c =>
-          c.name.toLowerCase().includes(cleanText.toLowerCase()) ||
-          cleanText.toLowerCase().includes(c.name.toLowerCase())
-        );
-      }
-
-      // 4. Default fallback category
-      if (!matchedCategory) {
-        const fallbackName = type === "expense" ? "อื่นๆ" : "รายได้อื่น";
-        matchedCategory = cats?.find(c => c.name === fallbackName) || cats?.[0] || null;
-      }
-
-      // Fetch user's active accounts
-      const { data: accounts } = await supabase
-        .from("accounts")
-        .select("id, name")
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .order("created_at", { ascending: true });
+      // Command D: Quick Record transaction (AI Powered)
+      
+      // 1. Fetch user's categories and accounts for AI context
+      const [ { data: cats }, { data: accounts } ] = await Promise.all([
+        supabase.from("categories").select("id, name, type").or(`user_id.eq.${userId},user_id.is.null`),
+        supabase.from("accounts").select("id, name").eq("user_id", userId).eq("is_active", true).order("created_at", { ascending: true })
+      ]);
 
       if (!accounts || accounts.length === 0) {
         await replyMessage(replyToken, "ไม่พบบัญชีเงินในระบบ กรุณาสร้างบัญชีบนแอปก่อนใช้งานครับ");
         continue;
       }
 
-      // 1 บัญชี — บันทึกทันที ไม่ต้องถาม
-      if (accounts.length === 1) {
+      let apiKey = process.env.GEMINI_API_KEY;
+      let amount = 0;
+      let type: "income" | "expense" = "expense";
+      let matchedCategory = null;
+      let targetAccount = null;
+      let cleanText = userMessage;
+
+      if (apiKey) {
+        // AI Parsing Path
+        const ai = new GoogleGenAI({ apiKey });
+        const categoriesList = cats?.map(c => `- ${c.name} (type: ${c.type})`).join('\n') || '';
+        const accountsList = accounts?.map(a => `- ${a.name}`).join('\n') || '';
+        
+        const prompt = `You are a smart Thai personal finance assistant.
+Parse this user message: "${userMessage}"
+
+Available Categories:
+${categoriesList}
+
+Available Accounts:
+${accountsList}
+
+Rules:
+1. Identify the transaction amount as a number.
+2. Determine if it's "expense" (default) or "income".
+3. Find the best matching category name from the list. If none fits perfectly, pick the closest one (e.g., "ชา" -> "อาหารและเครื่องดื่ม"). If really unsure, use null.
+4. If the user mentions a payment method (e.g., "เงินสด", "บัตรเครดิต", "kbank"), match it to the Available Accounts. Otherwise, use null.
+5. Provide a short "note" describing the item (e.g., "ข้าวราดแกง").
+6. Respond ONLY with a raw JSON object (no markdown, no backticks).
+
+JSON format:
+{
+  "amount": number,
+  "type": "expense" | "income",
+  "category_name": string | null,
+  "account_name": string | null,
+  "note": string
+}`;
+
+        try {
+          const response = await ai.models.generateContent({
+             model: 'gemini-2.5-flash',
+             contents: prompt
+          });
+          
+          const rawText = (response.text || "").trim();
+          const jsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(jsonText);
+          
+          amount = parseFloat(parsed.amount);
+          type = parsed.type === "income" ? "income" : "expense";
+          cleanText = parsed.note || userMessage;
+          
+          if (parsed.category_name) {
+             matchedCategory = cats?.find(c => c.name.toLowerCase() === parsed.category_name.toLowerCase()) || null;
+          }
+          if (parsed.account_name) {
+             targetAccount = accounts?.find(a => a.name.toLowerCase() === parsed.account_name.toLowerCase()) || null;
+          }
+        } catch (aiErr) {
+          console.error("LINE BOT AI Parsing Error:", aiErr);
+          // Fallback if AI fails
+          apiKey = ""; // Trigger fallback
+        }
+      }
+
+      if (!apiKey || isNaN(amount) || amount <= 0) {
+        // Legacy Pattern Parsing Path (Fallback)
+        const cleanInput = userMessage.replace(/,/g, "");
+        const amountMatch = cleanInput.match(/(\d+(?:\.\d+)?)/);
+        if (!amountMatch) {
+          await replyMessage(
+            replyToken,
+            `💡 คำแนะนำการใช้งานแชทบอท:\n\n1. บันทึกรายจ่าย: พิมพ์ชื่อรายการตามด้วยราคา (เช่น 'ค่าข้าว 150')\n2. บันทึกรายรับ: พิมพ์คำว่า 'รายรับ' นำหน้า\n3. ดูสรุป: พิมพ์ 'สรุป'\n4. ดูประวัติล่าสุด: พิมพ์ 'ล่าสุด'\n5. ลบรายการผิด: พิมพ์ 'ลบ #1'`
+          );
+          continue;
+        }
+
+        amount = parseFloat(amountMatch[1]);
+        const textPart = cleanInput.replace(amountMatch[0], "").trim();
+
+        if (!textPart) {
+          await replyMessage(replyToken, `กรุณาระบุรายละเอียดรายการด้วยครับ เช่น 'ค่าอาหาร ${amount}'`);
+          continue;
+        }
+
+        const incomeKeywords = ["รายรับ", "รายได้", "ได้เงิน", "รับเงิน", "เงินเดือน", "income"];
+        for (const keyword of incomeKeywords) {
+          if (textPart.toLowerCase().startsWith(keyword)) {
+            type = "income";
+            cleanText = textPart.substring(keyword.length).trim();
+            break;
+          } else if (textPart.toLowerCase().endsWith(keyword)) {
+            type = "income";
+            cleanText = textPart.substring(0, textPart.length - keyword.length).trim();
+            break;
+          }
+        }
+
+        const expenseKeywords = ["รายจ่าย", "จ่าย", "ซื้อ", "ค่า", "expense"];
+        for (const keyword of expenseKeywords) {
+          if (cleanText.toLowerCase().startsWith(keyword) && cleanText.length > keyword.length) {
+            if (keyword === "จ่าย" || keyword === "ซื้อ") {
+              cleanText = cleanText.substring(keyword.length).trim();
+            }
+            break;
+          }
+        }
+
+        matchedCategory = cats?.find(c => c.name.toLowerCase() === cleanText.toLowerCase());
+        if (!matchedCategory) {
+          const smartMap: { [key: string]: string } = {
+            "ข้าว": "อาหารและเครื่องดื่ม", "อาหาร": "อาหารและเครื่องดื่ม", "กิน": "อาหารและเครื่องดื่ม",
+            "รถ": "ค่าเดินทาง", "เดินทาง": "ค่าเดินทาง", "เน็ต": "ค่าสาธารณูปโภค", "ค่าไฟ": "ค่าสาธารณูปโภค"
+          };
+          for (const [key, catName] of Object.entries(smartMap)) {
+            if (cleanText.includes(key)) {
+              matchedCategory = cats?.find(c => c.name === catName);
+              if (matchedCategory) break;
+            }
+          }
+        }
+        if (!matchedCategory) {
+          matchedCategory = cats?.find(c => c.name.toLowerCase().includes(cleanText.toLowerCase()) || cleanText.toLowerCase().includes(c.name.toLowerCase()));
+        }
+      }
+
+      if (!matchedCategory) {
+        const fallbackName = type === "expense" ? "อื่นๆ" : "รายได้อื่น";
+        matchedCategory = cats?.find(c => c.name === fallbackName) || cats?.[0] || null;
+      }
+
+
+
+      // 1 บัญชี หรือ AI เลือกระบุบัญชีมาให้แม่นยำ — บันทึกทันที ไม่ต้องถาม
+      const finalAccount = targetAccount || (accounts.length === 1 ? accounts[0] : null);
+      if (finalAccount) {
         const thDate = getThDate();
         const todayStr = thDate.toISOString().split("T")[0];
         const { error: insertError } = await supabase
           .from("transactions")
           .insert([{
             user_id: userId, type, amount, date: todayStr,
-            account_id: accounts[0].id,
+            account_id: finalAccount.id,
             category_id: matchedCategory?.id || null,
             note: cleanText !== matchedCategory?.name ? cleanText : null,
             source: "line_bot",
           }]);
         if (insertError) throw insertError;
         await replyMessage(replyToken,
-          `✅ บันทึกรายการสำเร็จ!\nประเภท: ${type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}\nยอดเงิน: ฿${amount.toLocaleString()}\nหมวดหมู่: ${matchedCategory?.name || "ไม่มี"}\nบัญชี: ${accounts[0].name}\nโน้ต: ${cleanText}\n\n💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`);
+          `✅ บันทึกรายการสำเร็จ!\nประเภท: ${type === "income" ? "รายรับ 🟢" : "รายจ่าย 🔴"}\nยอดเงิน: ฿${amount.toLocaleString()}\nหมวดหมู่: ${matchedCategory?.name || "ไม่มี"}\nบัญชี: ${finalAccount.name}\nโน้ต: ${cleanText}\n\n💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`);
         continue;
       }
 

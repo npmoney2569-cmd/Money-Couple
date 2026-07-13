@@ -16,6 +16,7 @@
     "db:backfill-users": "node scripts/apply-backfill-users.mjs"
   },
   "dependencies": {
+    "@google/genai": "^2.11.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.54.0",
     "dotenv": "^16.6.1",
