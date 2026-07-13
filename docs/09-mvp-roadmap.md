@@ -119,14 +119,14 @@
 - [x] Expense Split + Settlement
 - [x] เป้าหมายร่วม + งบประมาณร่วม
 - [x] Dashboard / รายงานคู่รัก
-- [ ] 2FA
-- [ ] PIN Lock / Biometric Lock
+- [ ] 2FA — **(ยังไม่ต้องทำ รอทีหลังสุด)**
+- [ ] PIN Lock / Biometric Lock — **(ยังไม่ต้องทำ รอทีหลังสุด)**
 
 ---
 
 ## Phase 4 — Advanced (ทีหลังสุด)
 
-- [ ] OCR ใบเสร็จ
+- [x] OCR ใบเสร็จและสลิปธนาคาร (ผ่าน Gemini AI ใน LINE Bot)
 - [x] AI จัดหมวดหมู่ + Natural Language Parser (Gemini API in LINE Bot)
 - [ ] AI วิเคราะห์การเงิน + Forecast
 - [ ] Multi Currency
