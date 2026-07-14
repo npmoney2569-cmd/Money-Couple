@@ -11,7 +11,7 @@ function getThDate(): Date {
 }
 
 // Helper to download image from LINE
-async function getLineImageBuffer(messageId: string): Promise<Buffer | null> {
+async function getLineImageBuffer(messageId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
   const token = process.env.LINE_BOT_CHANNEL_ACCESS_TOKEN;
   if (!token) return null;
   try {
@@ -19,8 +19,9 @@ async function getLineImageBuffer(messageId: string): Promise<Buffer | null> {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
+    const mimeType = res.headers.get("content-type") || "image/jpeg";
     const arrayBuffer = await res.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    return { buffer: Buffer.from(arrayBuffer), mimeType };
   } catch (e) {
     console.error("Error fetching LINE image", e);
     return null;
@@ -432,13 +433,13 @@ JSON format:
           let aiContent: any[] = [];
           
           if (messageType === "image") {
-             const imageBuffer = await getLineImageBuffer(event.message.id);
-             if (!imageBuffer) throw new Error("Could not download image from LINE");
+             const imageResult = await getLineImageBuffer(event.message.id);
+             if (!imageResult) throw new Error("Could not download image from LINE");
              
              prompt = prompt + `\n\nPlease extract the transaction details from this receipt or bank slip image.`;
              aiContent = [
                { text: prompt },
-               { inlineData: { data: imageBuffer.toString("base64"), mimeType: "image/jpeg" } }
+               { inlineData: { data: imageResult.buffer.toString("base64"), mimeType: imageResult.mimeType } }
              ];
           } else {
              prompt = prompt + `\n\nParse this user message: "${userMessage}"`;
