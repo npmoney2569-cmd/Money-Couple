@@ -486,9 +486,14 @@ JSON format:
             console.error("LINE BOT: GEMINI_API_KEY is not set. Cannot process image.");
             imageErrMsg = "ขออภัยครับ ระบบยังไม่ได้ตั้งค่า API Key สำหรับอ่านรูปภาพ กรุณาติดต่อผู้ดูแลระบบครับ";
           } else if (aiError) {
-            // API Key มีแต่ AI error — แสดง error จริงเพื่อ debug
+            // API Key มีแต่ AI error — แยกกรณี quota หมด
             console.error("LINE BOT: AI failed to process image. Error:", aiError);
-            imageErrMsg = `[DEBUG] AI Error: ${aiError}`;
+            const isQuotaError = aiError.includes("429") || aiError.includes("RESOURCE_EXHAUSTED") || aiError.includes("quota");
+            if (isQuotaError) {
+              imageErrMsg = "ขออภัยครับ ระบบ AI ถึงขีดจำกัดการใช้งานฟรีแล้ว กรุณาพิมพ์รายการด้วยตัวเองแทนได้เลยครับ เช่น \"ค่าข้าว 150\"";
+            } else {
+              imageErrMsg = `ขออภัยครับ AI ไม่สามารถอ่านรูปภาพได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง หรือพิมพ์รายการด้วยตัวเองครับ`;
+            }
           } else {
             // AI อ่านได้แต่ได้ amount เป็น 0 หรือ NaN (ไม่พบตัวเลขในรูป)
             console.warn("LINE BOT: AI processed image but could not extract a valid amount.");
