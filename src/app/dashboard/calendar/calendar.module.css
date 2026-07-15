@@ -477,7 +477,8 @@
 @media (max-width: 420px) {
   .cellEmpty,
   .cell {
-    height: 56px;
+    height: 62px;
+    padding: 3px;
   }
 
   .dayHeader {
@@ -485,8 +486,12 @@
     padding: 4px 0;
   }
 
+  .dateNum {
+    font-size: 0.7rem;
+  }
+
   .amtIncome,
   .amtExpense {
-    display: none;
+    font-size: 0.52rem;
   }
 }
