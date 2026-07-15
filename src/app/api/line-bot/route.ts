@@ -450,12 +450,32 @@ JSON format:
           // contents ต้องอยู่ใน format { role, parts } ของ @google/genai SDK
           const aiContents = [{ role: "user", parts: aiParts }];
 
-          const response = await ai.models.generateContent({
-             model: 'gemini-3.5-flash',
-             contents: aiContents
-          });
-          
-          const rawText = (response.text || "").trim();
+          // Retry logic for transient 503/UNAVAILABLE errors
+          const maxRetries = 2;
+          let attempt = 0;
+          let response;
+          while (attempt <= maxRetries) {
+            try {
+              response = await ai.models.generateContent({
+                model: 'gemini-3.5-flash',
+                contents: aiContents
+              });
+              break; // success
+            } catch (retryErr: any) {
+              attempt++;
+              const retryMsg = retryErr?.message || String(retryErr);
+              const isUnavailable = retryMsg.includes('UNAVAILABLE') || retryMsg.includes('503');
+              if (isUnavailable && attempt <= maxRetries) {
+                console.warn(`Gemini unavailable (attempt ${attempt}/${maxRetries}), retrying...`);
+                // simple delay before retry
+                await new Promise(res => setTimeout(res, 1000 * attempt));
+                continue;
+              }
+              // other errors or max retries reached
+              throw retryErr;
+            }
+          }
+          const rawText = (response?.text || "").trim();
           const jsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
           const parsed = JSON.parse(jsonText);
           
