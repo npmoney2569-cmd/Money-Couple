@@ -4,5 +4,10 @@
       "path": "/api/cron/daily-alerts",
       "schedule": "0 1 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/line-bot/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }

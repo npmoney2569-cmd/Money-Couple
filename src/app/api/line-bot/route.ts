@@ -393,6 +393,7 @@ export async function POST(request: NextRequest) {
       }
 
       let apiKey = process.env.GEMINI_API_KEY;
+      let aiError: string | null = null; // track AI error reason
       let amount = 0;
       let type: "income" | "expense" = "expense";
       let matchedCategory = null;
@@ -465,8 +466,9 @@ JSON format:
           if (parsed.account_name) {
              targetAccount = accounts?.find(a => a.name.toLowerCase() === parsed.account_name.toLowerCase()) || null;
           }
-        } catch (aiErr) {
+        } catch (aiErr: any) {
           console.error("LINE BOT AI Parsing Error:", aiErr);
+          aiError = aiErr?.message || String(aiErr);
           // Fallback if AI fails
           apiKey = ""; // Trigger fallback
         }
@@ -474,7 +476,22 @@ JSON format:
 
       if (!apiKey || isNaN(amount) || amount <= 0) {
         if (messageType === "image") {
-          await replyMessage(replyToken, "ขออภัยครับ การอ่านรูปภาพต้องใช้ AI แต่คุณยังไม่ได้ใส่ API Key หรือ AI อาจมีปัญหาครับ");
+          const originalApiKey = process.env.GEMINI_API_KEY;
+          let imageErrMsg: string;
+          if (!originalApiKey) {
+            // ไม่มี API Key ตั้งแต่ต้น
+            console.error("LINE BOT: GEMINI_API_KEY is not set. Cannot process image.");
+            imageErrMsg = "ขออภัยครับ ระบบยังไม่ได้ตั้งค่า API Key สำหรับอ่านรูปภาพ กรุณาติดต่อผู้ดูแลระบบครับ";
+          } else if (aiError) {
+            // API Key มีแต่ AI error
+            console.error("LINE BOT: AI failed to process image. Error:", aiError);
+            imageErrMsg = `ขออภัยครับ AI ไม่สามารถอ่านรูปภาพได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง หรือพิมพ์รายการด้วยตัวเองครับ`;
+          } else {
+            // AI อ่านได้แต่ได้ amount เป็น 0 หรือ NaN (ไม่พบตัวเลขในรูป)
+            console.warn("LINE BOT: AI processed image but could not extract a valid amount.");
+            imageErrMsg = "ขออภัยครับ AI อ่านรูปแล้วแต่ไม่พบยอดเงินในภาพ กรุณาลองส่งรูปสลิปหรือใบเสร็จที่ชัดกว่านี้ครับ";
+          }
+          await replyMessage(replyToken, imageErrMsg);
           continue;
         }
 
