@@ -63,7 +63,6 @@ const menuGroups: MenuGroup[] = [
     items: [
       { label: "รายรับ", href: "/dashboard/income", icon: ArrowDownCircle },
       { label: "รายจ่าย", href: "/dashboard/expense", icon: ArrowUpCircle },
-      { label: "Split Transaction", href: "/dashboard/splits", icon: Split },
       { label: "โอนเงิน", href: "/dashboard/transfer", icon: ArrowLeftRight },
       { label: "บัญชี", href: "/dashboard/accounts", icon: Wallet },
       { label: "หมวดหมู่", href: "/dashboard/categories", icon: LayoutGrid },
