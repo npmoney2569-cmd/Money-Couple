@@ -435,9 +435,13 @@ JSON format:
           
           if (messageType === "image") {
              const imageResult = await getLineImageBuffer(event.message.id);
-             if (!imageResult) throw new Error("Could not download image from LINE");
-             
-             prompt = prompt + `\n\nPlease extract the transaction details from this receipt or bank slip image.`;
+             if (!imageResult) {
+            const msg = "ขออภัยครับ ไม่สามารถดาวน์โหลดรูปจาก LINE ได้ กรุณาลองส่งใหม่หรือพิมพ์รายการด้วยตนเอง";
+            await replyMessage(replyToken, msg);
+            continue;
+          }
+          
+          prompt = prompt + `\n\nPlease extract the transaction details from this receipt or bank slip image.`;
              aiParts = [
                { text: prompt },
                { inlineData: { mimeType: imageResult.mimeType, data: imageResult.buffer.toString("base64") } }
@@ -475,9 +479,13 @@ JSON format:
               throw retryErr;
             }
           }
-          const rawText = (response?.text || "").trim();
-          const jsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-          const parsed = JSON.parse(jsonText);
+          // If all retries failed and no response received
+          if (!response) {
+            console.error('Gemini unavailable after retries');
+            const fallbackMsg = "ขออภัยครับ ระบบ AI กำลังใช้งานเต็ม โปรดลองใหม่อีกครั้งในภายหลัง หรือพิมพ์รายการด้วยตนเอง";
+            await replyMessage(replyToken, fallbackMsg);
+            continue; // skip further processing for this event
+          }
           
           amount = parseFloat(parsed.amount);
           type = parsed.type === "income" ? "income" : "expense";
