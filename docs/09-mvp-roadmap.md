@@ -1,20 +1,21 @@
 # MVP Roadmap
 
-> สถานะล่าสุดของโค้ดจริงดูที่ [11-current-status](./11-current-status.md)
+> อัปเดตล่าสุด: **15 กรกฎาคม 2569**
 
 ## สรุปสถานะปัจจุบัน
 
-- โปรเจกต์อยู่ช่วง **Phase 2 — Extended Features** (MVP Core เสร็จแล้ว ~95%)
-- TypeScript: ✅ 0 errors | ESLint: ✅ No warnings
+- โปรเจกต์อยู่ช่วง **Phase 4 — AI/OCR/Advanced** (Phase 1-3 เสร็จแล้ว)
+- TypeScript: ✅ 0 errors | ESLint: ✅ No warnings | Build: ✅ Pass
 - Deploy: ✅ cmn-money-couple.vercel.app ใช้งานได้จริง
-- ทดสอบ production แล้ว (2026-07-09): login/ทุกหน้า/mobile
+- Region: **Singapore** (Vercel `sin1` + Supabase `ap-southeast-1`) ✅
+- LINE Bot: ✅ ทำงานได้ (พิมพ์ข้อความ) | ⏳ สแกนรูป (รอเติม Gemini API Credit)
 
 ## หลักการแบ่ง Phase
 
 - **MVP (Phase 1):** ใช้งานได้จริงสำหรับบุคคลเดี่ยว — บันทึกรายรับ-รายจ่าย ดู Dashboard ตั้งงบประมาณ ✅
-- **Phase 2:** ฟีเจอร์เสริม + PWA + แจ้งเตือน (กำลังทำ)
-- **Phase 3:** โหมดคู่รัก + LINE Bot + Google/LINE OAuth
-- **Phase 4:** AI, OCR, Offline Sync, ฟีเจอร์ขั้นสูง
+- **Phase 2:** ฟีเจอร์เสริม + PWA + แจ้งเตือน ✅
+- **Phase 3:** โหมดคู่รัก + LINE Bot + Google/LINE OAuth ✅
+- **Phase 4:** AI, OCR, Offline Sync, ฟีเจอร์ขั้นสูง (กำลังทำ)
 
 ---
 
@@ -58,123 +59,90 @@
 - [x] Mobile UI fixes (KPI overflow, section layout, table buttons)
 - [x] Deploy Vercel (cmn-money-couple.vercel.app)
 
-### MVP — สิ่งที่ไม่ทำใน Phase 1
-- Google Login, LINE Login (→ Phase 3 ทีหลังสุด)
-- Apple Login, 2FA, Biometric Lock (→ Phase 3/4)
-- Recurring Transactions, PWA, Push Notification (→ Phase 2)
-- โหมดคู่รัก, LINE Bot, OCR/AI (→ Phase 3/4)
+---
+
+## Phase 2 — Extended Features ✅ เสร็จแล้ว
+
+- [x] ปฏิทินการเงิน (Calendar Grid + popup รายการรายวัน)
+- [x] รายการประจำ (Recurring Transactions)
+- [x] ระบบแจ้งเตือนอัตโนมัติ (บิล/งบ/เป้าหมาย)
+- [x] Vercel Cron Job แจ้งเตือนผ่าน LINE ทุก 08:00 น.
+- [x] PWA (manifest.json + Service Worker)
+- [x] รายงานขั้นสูง (MoM / YoY / PDF Export)
+- [x] Receipt Upload (Supabase Storage)
+- [x] Audit Log
+- [x] Dark Mode Toggle
+- [x] Account Bank Icons + Logo Upload
 
 ---
 
-## Phase 2 — Extended Features (กำลังทำ)
+## Phase 3 — Couple Mode & LINE Bot & OAuth ✅ เสร็จแล้ว
 
-### 🟠 ลำดับ 1: ปฏิทินการเงิน (Calendar View)
-- [x] แปลงหน้าปฏิทินจากตารางธุรกรรมเป็น Calendar Grid จริง
-- [x] กดวันที่ดู popup รายการธุรกรรมของวันนั้น
-- [x] แสดงยอด income/expense สรุปบนแต่ละวัน
-
-### 🟠 ลำดับ 2: รายการประจำ (Recurring Transactions)
-- [x] CRUD recurring_transactions (ประเภท, จำนวน, บัญชี, หมวดหมู่, ความถี่)
-- [x] Auto-create transactions ตามรอบ (รายวัน/สัปดาห์/เดือน/ปี)
-- [x] แสดง upcoming transactions บน Dashboard/Calendar
-
-### 🟠 ลำดับ 3: ระบบแจ้งเตือนอัตโนมัติ
-- [x] แจ้งเตือนบิลใกล้ครบกำหนด (X วันก่อน due_day)
-- [x] แจ้งเตือนเกินงบประมาณ (expense > budget amount)
-- [x] แจ้งเตือนเป้าหมายบรรลุ (balance >= target_amount)
-- [x] Scheduled job หรือ trigger สร้าง notification อัตโนมัติ
-
-### 🟡 ลำดับ 4: PWA
-- [x] `manifest.json` (icon, theme, name, standalone)
-- [x] Service Worker (cache shell assets)
-- [x] Add to Home Screen prompt
-
-### 🟡 ลำดับ 5: รายงานขั้นสูง
-- [x] เปรียบเทียบรายเดือน MoM (Month-over-Month)
-- [x] เปรียบเทียบรายปี YoY (Year-over-Year)
-- [x] PDF Export
-
-### 🟡 ลำดับ 6: Receipt Upload
-- [x] อัปโหลดรูปใบเสร็จแนบกับธุรกรรม
-- [x] ใช้ Supabase Storage
-- [x] แสดง thumbnail ในตารางรายการ
-
-### 🟢 ลำดับ 7: Audit Log
-- [x] บันทึกประวัติการแก้ไข CRUD
-- [x] แสดงหน้า Audit Log
-
-### 🟢 ลำดับ 8: Dark Mode Toggle จริง
-- [x] ปัจจุบันมีตัวเลือกแต่ยังไม่เปลี่ยนธีมจริง
-- [x] เชื่อม localStorage + CSS variables
-
-### 🟢 ลำดับ 9: Account Bank Icons
-- [x] เพิ่มการเลือกโลโก้ธนาคาร / ไอคอน (Presets) ในหน้าบัญชี
-- [x] รองรับการอัปโหลดโลโก้เองลงใน Supabase Storage
-- [x] แสดงผลบนหน้า Dashboard และ Accounts list อย่างสวยงาม
-
----
-
-## Phase 3 — Couple Mode & LINE Bot & OAuth (ทำทีหลังสุด)
-
-- [ ] Google Login (OAuth) — **(ยังไม่ต้องทำ รอผู้ใช้แจ้งเปิดใช้งาน)** เปิด `ENABLE_GOOGLE_OAUTH = true` หลังตั้งค่า Google Console
-- [x] LINE Login (OAuth) — พัฒนา Custom OAuth Callback และเปิดใช้งานเรียบร้อย
-- [x] LINE Bot — Webhook, Parser แบบ Pattern
-- [x] LINE Bot — บันทึกรายรับ-รายจ่าย, คำสั่งสรุป, แก้ไข/ลบ
+- [x] LINE Login (OAuth) — Custom OAuth Callback
+- [x] LINE Bot — Webhook, Pattern Parser
+- [x] LINE Bot — บันทึกรายรับ-รายจ่าย, สรุป, ลบรายการ
+- [x] LINE Bot — Natural Language (Gemini AI)
 - [x] โหมดคู่รัก — เชิญ, ยืนยัน, บัญชีกลาง
 - [x] Expense Split + Settlement
 - [x] เป้าหมายร่วม + งบประมาณร่วม
 - [x] Dashboard / รายงานคู่รัก
+- [ ] Google Login (OAuth) — **(ยังไม่ต้องทำ รอผู้ใช้แจ้งเปิดใช้งาน)**
 - [ ] 2FA — **(ยังไม่ต้องทำ รอทีหลังสุด)**
 - [ ] PIN Lock / Biometric Lock — **(ยังไม่ต้องทำ รอทีหลังสุด)**
 
 ---
 
-## Phase 4 — Advanced (ทีหลังสุด)
+## Phase 4 — Advanced (กำลังทำ)
 
-- [x] OCR ใบเสร็จและสลิปธนาคาร (ผ่าน Gemini AI ใน LINE Bot)
-- [x] AI จัดหมวดหมู่ + Natural Language Parser (Gemini API in LINE Bot)
+- [x] AI Natural Language Parser (Gemini API in LINE Bot)
+- [x] AI ผู้ช่วยการเงิน (`/dashboard/ai-advisor`)
+- [x] Import Statement ธนาคาร (CSV/Excel)
+- [x] Gamification (Streak, Badge) — ซ่อนชั่วคราว
+- [⏳] OCR สแกนรูปสลิป/ใบเสร็จใน LINE Bot — **รอเติม Gemini API Credit (400 บาท)**
 - [ ] AI วิเคราะห์การเงิน + Forecast
 - [ ] Multi Currency
 - [ ] Offline Sync
-- [x] Import Statement ธนาคาร (CSV/Excel)
-- [x] Financial Health Score
-- [x] Gamification (Streak, Badge)
 - [ ] Apple Login
 - [ ] Capacitor wrap → App Store / Play Store
+
+### หน้าที่ยังกระดานเปล่า (รอพัฒนา)
+- [ ] `/dashboard/assets` — สินทรัพย์
+- [ ] `/dashboard/debts` — หนี้สิน
+- [ ] `/dashboard/subscriptions` — ค่าบริการรายเดือน
 
 ---
 
 ## ความคืบหน้าภาพรวม
 
 ```
-Phase 1 (MVP Core):         ██████████████████████  100% เสร็จสิ้น
-Phase 2 (Extended):         ████████████████░░░░░░   75% เสร็จสิ้น
-Phase 3 (Couple+LINE+OAuth): ████████████████░░░░░   80% เสร็จสิ้น (รอเปิดใช้ Google OAuth, 2FA, PIN)
-Phase 4 (AI/OCR/Advanced):   ████████░░░░░░░░░░░░   40%
+Phase 1 (MVP Core):          ██████████████████████  100% ✅
+Phase 2 (Extended):          ██████████████████████  100% ✅
+Phase 3 (Couple+LINE+OAuth): ████████████████████░░   92% ✅
+Phase 4 (AI/OCR/Advanced):   ██████████░░░░░░░░░░░   50% ⏳
 ───────────────────────────────────────────────────
-ภาพรวมทั้งโปรเจกต์:         █████████████████░░░░  ~85%
+ภาพรวมทั้งโปรเจกต์:          ██████████████████░░░  ~88%
 ```
 
 ---
 
-## ผลการทดสอบ Production (2026-07-09)
+## ผลการทดสอบ Production (15 ก.ค. 2569)
 
 | หน้า | สถานะ | หมายเหตุ |
 |---|---|---|
-| Login (Email/Username) | ✅ ทำงานได้ | admin/admin99 ผ่าน |
-| Dashboard | ✅ แสดงข้อมูล | KPI, กราฟ, รายการล่าสุด |
-| รายรับ/รายจ่าย/โอนเงิน | ✅ ทำงานได้ | CRUD สมบูรณ์ |
-| บัญชี/หมวดหมู่/แท็ก | ✅ ทำงานได้ | CRUD สมบูรณ์ |
-| งบประมาณ/เป้าหมาย | ✅ ทำงานได้ | CRUD สมบูรณ์ |
-| หนี้สิน/สินทรัพย์/บิล | ✅ ทำงานได้ | CRUD สมบูรณ์ |
-| รายงาน | ✅ ทำงานได้ | สรุปรายเดือน + Export CSV |
-| ค้นหา | ✅ ทำงานได้ | - |
-| ปฏิทิน | ✅ ทำงานได้ | แสดง Calendar Grid สมบูรณ์, แยกข้อมูลส่วนตัว/คู่รักได้ |
-| แจ้งเตือน | ✅ ทำงานได้ | Vercel Cron Job ทำงานอัตโนมัติแจ้งเตือนบิลผ่าน LINE ทุก 08:00 น. |
-| ผู้ใช้งาน/ความปลอดภัย/ตั้งค่า | ✅ ทำงานได้ | - |
-| Google Login | ⛔ ซ่อนไว้ | ยังไม่ต้องทำ (รอผู้ใช้แจ้งเปิดใช้งาน) |
-| LINE Login | ✅ ทำงานได้ | พัฒนา Custom OAuth Callback สำเร็จ |
-| LINE Bot | ✅ ทำงานได้ | พัฒนา Webhook, Pattern Parser และคำสั่งสรุป/ลบสำเร็จเรียบร้อย |
-| โหมดคู่รัก (Couple Hub) | ✅ ทำงานได้ | หน้าระบบจับคู่รัก, ตั้งหารค่าใช้จ่าย ยอดสะสมโอนคืน และรายงานคู่อย่างสมบูรณ์ |
-| งบประมาณ/เป้าหมายร่วม | ✅ ทำงานได้ | รองรับการแบ่งแท็บข้อมูลส่วนตัวและระบบของคู่รัก |
-
+| Login (Email/Username) | ✅ | ทำงานได้ปกติ |
+| Dashboard | ✅ | KPI, กราฟ, รายการล่าสุด |
+| รายรับ/รายจ่าย/โอนเงิน | ✅ | CRUD สมบูรณ์ |
+| บัญชี/หมวดหมู่/แท็ก | ✅ | CRUD + Bank Icons |
+| งบประมาณ/เป้าหมาย | ✅ | CRUD สมบูรณ์ |
+| หนี้สิน/สินทรัพย์/บิล | ✅ | CRUD สมบูรณ์ |
+| รายงาน | ✅ | สรุปรายเดือน + Export CSV |
+| ปฏิทิน | ✅ | Calendar Grid สมบูรณ์ |
+| แจ้งเตือน | ✅ | Vercel Cron Job 08:00 น. ทุกวัน |
+| LINE Login | ✅ | Custom OAuth Callback |
+| LINE Bot (พิมพ์ข้อความ) | ✅ | บันทึก/สรุป/ลบ ทำงานได้ |
+| LINE Bot (สแกนรูป) | ⏳ | รอเติม Gemini API Credit 400 บาท |
+| AI ผู้ช่วยการเงิน | ✅ | `/dashboard/ai-advisor` |
+| โหมดคู่รัก | ✅ | จับคู่, แบ่งค่าใช้จ่าย, รายงานร่วม |
+| Google Login | ⛔ ซ่อนไว้ | รอผู้ใช้แจ้งเปิดใช้งาน |
+| `/dashboard/health` | ❌ ลบแล้ว | ถูกนำออกเมื่อ 15 ก.ค. 69 |
+| Vercel Region | ✅ Singapore `sin1` | ตรงกับ Supabase `ap-southeast-1` |
