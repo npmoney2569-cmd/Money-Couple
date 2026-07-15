@@ -431,25 +431,28 @@ JSON format:
 }`;
 
         try {
-          let aiContent: any[] = [];
+          let aiParts: any[] = [];
           
           if (messageType === "image") {
              const imageResult = await getLineImageBuffer(event.message.id);
              if (!imageResult) throw new Error("Could not download image from LINE");
              
              prompt = prompt + `\n\nPlease extract the transaction details from this receipt or bank slip image.`;
-             aiContent = [
+             aiParts = [
                { text: prompt },
-               { inlineData: { data: imageResult.buffer.toString("base64"), mimeType: imageResult.mimeType } }
+               { inlineData: { mimeType: imageResult.mimeType, data: imageResult.buffer.toString("base64") } }
              ];
           } else {
              prompt = prompt + `\n\nParse this user message: "${userMessage}"`;
-             aiContent = [{ text: prompt }];
+             aiParts = [{ text: prompt }];
           }
+
+          // contents ต้องอยู่ใน format { role, parts } ของ @google/genai SDK
+          const aiContents = [{ role: "user", parts: aiParts }];
 
           const response = await ai.models.generateContent({
              model: 'gemini-2.0-flash',
-             contents: aiContent
+             contents: aiContents
           });
           
           const rawText = (response.text || "").trim();
