@@ -487,6 +487,10 @@ JSON format:
             continue; // skip further processing for this event
           }
           
+          const rawText = (response?.text || "").trim();
+          const jsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(jsonText);
+
           amount = parseFloat(parsed.amount);
           type = parsed.type === "income" ? "income" : "expense";
           cleanText = parsed.note || userMessage;

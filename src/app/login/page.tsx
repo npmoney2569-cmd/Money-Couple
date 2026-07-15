@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import AuthForm from "@/components/auth-form";
 import styles from "./login.module.css";
 
@@ -14,7 +15,7 @@ export default async function LoginPage({
     <main className={styles.page}>
       <section className={styles.card}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 16 }}>
-          <img src="/LOGO.png" alt="Logo" style={{ height: 64, width: "auto", borderRadius: 12, marginBottom: 8 }} />
+          <Image src="/LOGO.png" alt="Logo" width={64} height={64} style={{ borderRadius: 12, marginBottom: 8 }} priority />
         </div>
         <h1 className={styles.title} style={{ textAlign: "center" }}>เข้าสู่ระบบ</h1>
         {justRegistered ? (

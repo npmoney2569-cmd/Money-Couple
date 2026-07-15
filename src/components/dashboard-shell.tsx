@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
 import ThemeToggle from "@/components/theme-toggle";
@@ -243,7 +244,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src="/LOGO.png" alt="Logo" style={{ height: 32, width: "auto", borderRadius: 6 }} />
+            <Image src="/LOGO.png" alt="Logo" width={32} height={32} style={{ borderRadius: 6 }} priority />
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span className={styles.brandTitle}>Money Couple</span>
               <span className={styles.brandSub}>บัญชีง่าย ชีวิตสบาย</span>
@@ -307,7 +308,7 @@ export default function DashboardShell({ email, children }: DashboardShellProps)
         <div className={`${styles.drawer} ${drawerOpen ? styles.drawerOpen : ""}`}>
           <div className={styles.drawerHeader}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <img src="/LOGO.png" alt="Logo" style={{ height: 28, width: "auto", borderRadius: 6 }} />
+              <Image src="/LOGO.png" alt="Logo" width={28} height={28} style={{ borderRadius: 6 }} priority />
               <span style={{ fontWeight: 700, fontSize: 16 }}>Money Couple</span>
             </div>
             <button className={styles.drawerClose} onClick={() => setDrawerOpen(false)}>
