@@ -69,6 +69,28 @@ async function replyMessage(replyToken: string, text: string, quickReplyItems?: 
   }
 }
 
+// Helper to show "..." loading animation (typing indicator)
+async function sendLoadingAnimation(chatId: string) {
+  const channelAccessToken = process.env.LINE_BOT_CHANNEL_ACCESS_TOKEN || "";
+  if (!channelAccessToken) return;
+
+  try {
+    await fetch("https://api.line.me/v2/bot/chat/loading/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${channelAccessToken}`,
+      },
+      body: JSON.stringify({
+        chatId: chatId,
+        loadingSeconds: 5,
+      }),
+    });
+  } catch (error) {
+    console.error("LINE BOT Loading Animation error:", error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   const channelSecret = process.env.LINE_BOT_CHANNEL_SECRET || "";
   const bodyText = await request.text();
@@ -112,6 +134,9 @@ export async function POST(request: NextRequest) {
     const userMessage = messageType === "text" ? event.message.text.trim() : "";
 
     if (!lineUserId || !replyToken) continue;
+
+    // Show typing animation so the user knows the bot is processing (and it feels like the message is acknowledged)
+    await sendLoadingAnimation(lineUserId);
 
     // 3. Resolve user_id from auth_providers linked with LINE
     const { data: linkData, error: linkError } = await supabase
