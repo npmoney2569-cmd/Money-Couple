@@ -24,7 +24,7 @@ function deltaText(value: number) {
 function formatAxis(val: number) {
   if (val >= 1000000) return `฿${(val / 1000000).toFixed(1)}M`;
   if (val >= 1000) return `฿${(val / 1000).toFixed(0)}k`;
-  return `฿${val}`;
+  return `฿${Math.round(val)}`;
 }
 
 export default async function DashboardPage() {
