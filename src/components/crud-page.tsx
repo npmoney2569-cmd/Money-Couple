@@ -130,9 +130,9 @@ export default function CrudPage({
               });
             }
 
-            // กรองเฉพาะบัญชีของ user ปัจจุบัน
+            // กรองเฉพาะบัญชีของ user ปัจจุบัน + บัญชีคู่รัก (couple_id IS NOT NULL)
             if (queryDef.filterByUserId && currentUserId) {
-              query = query.eq("user_id", currentUserId as any);
+              query = query.or(`user_id.eq.${currentUserId},couple_id.not.is.null`);
             }
 
             if (queryDef.orderBy) {
