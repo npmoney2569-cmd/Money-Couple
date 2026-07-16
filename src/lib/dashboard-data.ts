@@ -276,7 +276,14 @@ export async function getDashboardData() {
     .slice(0, 5);
 
   const latestRows = latestTx.map((tx) => {
-    const label = tx.type === "income" ? tx.payee || tx.note || "รายรับ" : tx.merchant || tx.note || "รายจ่าย";
+    let label: string;
+    if (tx.type === "income") {
+      label = tx.payee || tx.note || "รายรับ";
+    } else if (tx.type === "transfer") {
+      label = tx.note || "โอนเงิน";
+    } else {
+      label = tx.merchant || tx.note || "รายจ่าย";
+    }
     const amount = num(tx.amount);
     return {
       id: tx.id,

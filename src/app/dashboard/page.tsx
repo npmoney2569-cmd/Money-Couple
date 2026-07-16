@@ -11,6 +11,7 @@ import {
   Scale,
   ArrowDownCircle,
   ArrowUpCircle,
+  ArrowLeftRight,
   Receipt,
   Flame,
 } from "lucide-react";
@@ -232,11 +233,30 @@ export default async function DashboardPage() {
           <h2 className={styles.sectionTitle}>รายการล่าสุด</h2>
           <ul className={styles.list}>
             {data.latestRows.map((tx) => {
-              const TxIcon = tx.type === "income" ? ArrowDownCircle : ArrowUpCircle;
+              const TxIcon =
+                tx.type === "income"
+                  ? ArrowDownCircle
+                  : tx.type === "transfer"
+                  ? ArrowLeftRight
+                  : ArrowUpCircle;
+              const iconStyle =
+                tx.type === "income"
+                  ? styles.bgGood
+                  : tx.type === "transfer"
+                  ? styles.bgBlue
+                  : styles.bgBad;
+              const amountStyle =
+                tx.type === "income"
+                  ? styles.good
+                  : tx.type === "transfer"
+                  ? styles.neutral
+                  : styles.bad;
+              const amountPrefix =
+                tx.type === "income" ? "+" : tx.type === "transfer" ? "" : "-";
               return (
                 <li key={tx.id} className={styles.row}>
                   <div className={styles.rowLeft}>
-                    <div className={`${styles.rowIcon} ${tx.type === "income" ? styles.bgGood : styles.bgBad}`}>
+                    <div className={`${styles.rowIcon} ${iconStyle}`}>
                       <TxIcon size={16} />
                     </div>
                     <div>
@@ -244,8 +264,8 @@ export default async function DashboardPage() {
                       <small className={styles.kpiSmall}>{tx.date}</small>
                     </div>
                   </div>
-                  <span className={tx.type === "income" ? styles.good : styles.bad}>
-                    {tx.type === "income" ? "+" : "-"}
+                  <span className={amountStyle}>
+                    {amountPrefix}
                     {thb(tx.amount)}
                   </span>
                 </li>

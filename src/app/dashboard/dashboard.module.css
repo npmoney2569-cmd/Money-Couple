@@ -138,6 +138,10 @@
   color: #ff6f8c;
 }
 
+.neutral {
+  color: #38bdf8;
+}
+
 .progressWrap {
   height: 8px;
   border-radius: 999px;
