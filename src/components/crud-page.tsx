@@ -110,12 +110,31 @@ export default function CrudPage({
 
       setOptionsLoading(true);
       try {
-        // ดึง user ปัจจุบันสำหรับกรอง filterByUserId
+        // ดึง user ปัจจุบัน + partner สำหรับกรอง filterByUserId
         let currentUserId: string | null = null;
+        let partnerUserId: string | null = null;
         const needsUserFilter = queryFields.some((f) => f.optionsQuery?.filterByUserId);
         if (needsUserFilter) {
           const { data: { user } } = await supabase.auth.getUser();
           currentUserId = user?.id ?? null;
+
+          // ดึง partner user_id จาก couple_members
+          if (currentUserId) {
+            const { data: myMember } = await supabase
+              .from("couple_members")
+              .select("couple_id")
+              .eq("user_id", currentUserId)
+              .maybeSingle();
+
+            if (myMember?.couple_id) {
+              const { data: allMembers } = await supabase
+                .from("couple_members")
+                .select("user_id")
+                .eq("couple_id", myMember.couple_id);
+
+              partnerUserId = allMembers?.find((m) => m.user_id !== currentUserId)?.user_id ?? null;
+            }
+          }
         }
 
         const resolved = await Promise.all(
@@ -130,9 +149,11 @@ export default function CrudPage({
               });
             }
 
-            // กรองเฉพาะบัญชีของ user ปัจจุบัน + บัญชีคู่รัก (couple_id IS NOT NULL)
+            // กรอง: บัญชีของฉัน + บัญชีของคู่รัก + บัญชีคู่ (couple_id IS NOT NULL)
             if (queryDef.filterByUserId && currentUserId) {
-              query = query.or(`user_id.eq.${currentUserId},couple_id.not.is.null`);
+              const orParts = [`user_id.eq.${currentUserId}`, `couple_id.not.is.null`];
+              if (partnerUserId) orParts.push(`user_id.eq.${partnerUserId}`);
+              query = query.or(orParts.join(","));
             }
 
             if (queryDef.orderBy) {
