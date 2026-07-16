@@ -432,8 +432,8 @@ export async function POST(request: NextRequest) {
           const parts = restText
             .replace(/จาก|ไปยัง|ไป|->|→/g, "|")
             .split("|")
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0);
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0);
 
           if (parts.length >= 2) {
             fromAcc = transferAccounts.find(
