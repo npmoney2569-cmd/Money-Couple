@@ -124,6 +124,39 @@ export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
 
   for (const event of events) {
+    if (event.type === "follow") {
+      const replyToken = event.replyToken;
+      if (!replyToken) continue;
+      
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3008";
+      const greetingMsg = `สวัสดีครับ! ยินดีต้อนรับสู่ Money Couple บอทผู้ช่วยจัดการเงินคู่รัก 💑
+
+คุณสามารถบันทึกรายรับรายจ่ายได้ง่ายๆ ผ่านแชทนี้เลยครับ!
+
+💡 วิธีใช้งานเบื้องต้น:
+📝 บันทึกรายการ:
+• รายจ่าย: พิมพ์ชื่อตามด้วยราคา (เช่น 'ค่าข้าว 150')
+• รายรับ: พิมพ์ 'รายรับ' นำหน้า (เช่น 'รายรับ เงินเดือน 30000')
+• โอนเงิน: พิมพ์ 'โอน 500' หรือ 'โอน 500 กสิก ออมทรัพย์'
+
+📊 ดูข้อมูล:
+• 'สรุป' — สรุปวันนี้และเดือนนี้
+• 'สรุปหมวด' — รายจ่ายแยกตามหมวดหมู่
+• 'ยอดบัญชี' — ดูยอดเงินทุกบัญชี
+• 'ล่าสุด' — ดูประวัติ 5 รายการล่าสุด
+
+🗑️ จัดการ:
+• 'ลบ #1' — ลบรายการล่าสุดอันดับแรก
+
+🔗 ก่อนเริ่มใช้งาน กรุณาผูกบัญชี LINE กับระบบที่เว็บไซต์ของเราก่อนนะครับ:
+${appUrl}/login
+
+พิมพ์คำว่า "ช่วยเหลือ" หรือ "help" หากต้องการดูข้อความนี้อีกครั้งครับ 😊`;
+
+      await replyMessage(replyToken, greetingMsg);
+      continue;
+    }
+
     const messageType = event?.message?.type;
     if (event.type !== "message" || (messageType !== "text" && messageType !== "image")) {
       continue;
@@ -163,6 +196,18 @@ export async function POST(request: NextRequest) {
 
     try {
       // 4. Command Router
+      
+      const lowerMsg = messageType === "text" ? userMessage.toLowerCase() : "";
+
+      // Command: Help e.g., "ช่วยเหลือ", "help", "วิธีใช้"
+      if (lowerMsg === "ช่วยเหลือ" || lowerMsg === "help" || lowerMsg === "วิธีใช้" || lowerMsg === "คู่มือ") {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3008";
+        await replyMessage(
+          replyToken,
+          `💡 คำแนะนำการใช้งานแชทบอท:\n\n📝 บันทึกรายการ:\n• รายจ่าย: พิมพ์ชื่อตามด้วยราคา (เช่น 'ค่าข้าว 150')\n• รายรับ: พิมพ์ 'รายรับ' นำหน้า (เช่น 'รายรับ เงินเดือน 30000')\n• โอนเงิน: พิมพ์ 'โอน 500' หรือ 'โอน 500 กสิก ออมทรัพย์'\n\n📊 ดูข้อมูล:\n• 'สรุป' — สรุปวันนี้และเดือนนี้\n• 'สรุปเมื่อวาน' — สรุปเมื่อวาน\n• 'สรุปสัปดาห์' — สรุป 7 วันที่ผ่านมา\n• 'สรุปเดือนที่แล้ว' — สรุปเดือนที่แล้ว\n• 'สรุปหมวด' — รายจ่ายแยกตามหมวดหมู่\n• 'ยอดบัญชี' — ดูยอดเงินทุกบัญชี\n• 'ล่าสุด' — ดูประวัติ 5 รายการล่าสุด\n\n🗑️ จัดการ:\n• 'ลบ #1' — ลบรายการล่าสุดอันดับแรก\n\n🔗 เว็บไซต์ Money Couple:\n${appUrl}`
+        );
+        continue;
+      }
 
       // Command A: Delete recent transaction e.g., "ลบ #1"
       const deleteMatch = messageType === "text" ? userMessage.match(/^ลบ\s*#([1-5])$/i) : null;
@@ -209,7 +254,6 @@ export async function POST(request: NextRequest) {
       }
 
       // Command B: Report / Summary e.g., "สรุป", "สรุปวันนี้", "สรุปเดือนนี้"
-      const lowerMsg = messageType === "text" ? userMessage.toLowerCase() : "";
       if (lowerMsg === "สรุป" || lowerMsg === "สรุปวันนี้" || lowerMsg === "สรุปเดือนนี้" || lowerMsg === "summary" || lowerMsg === "report") {
         const thDate = getThDate();
         const todayStr = thDate.toISOString().split("T")[0];
