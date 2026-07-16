@@ -21,6 +21,7 @@ export type FieldDef = {
     labelSeparator?: string;
     valueKey: string;
     filter?: Record<string, string | number | boolean>;
+    filterByUserId?: boolean;
     orderBy?: string;
     orderAscending?: boolean;
   };
@@ -109,6 +110,14 @@ export default function CrudPage({
 
       setOptionsLoading(true);
       try {
+        // ดึง user ปัจจุบันสำหรับกรอง filterByUserId
+        let currentUserId: string | null = null;
+        const needsUserFilter = queryFields.some((f) => f.optionsQuery?.filterByUserId);
+        if (needsUserFilter) {
+          const { data: { user } } = await supabase.auth.getUser();
+          currentUserId = user?.id ?? null;
+        }
+
         const resolved = await Promise.all(
           queryFields.map(async (field) => {
             const queryDef = field.optionsQuery!;
@@ -119,6 +128,11 @@ export default function CrudPage({
               Object.entries(queryDef.filter).forEach(([key, value]) => {
                 query = query.eq(key, value as any);
               });
+            }
+
+            // กรองเฉพาะบัญชีของ user ปัจจุบัน
+            if (queryDef.filterByUserId && currentUserId) {
+              query = query.eq("user_id", currentUserId as any);
             }
 
             if (queryDef.orderBy) {
