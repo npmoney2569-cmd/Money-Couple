@@ -270,6 +270,241 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      // Command F: Account Balance — "ยอดบัญชี", "ยอดเงิน", "บัญชี"
+      const balanceKeywords = ["ยอดบัญชี", "ยอดเงิน", "บัญชี", "balance", "เงินคงเหลือ"];
+      if (messageType === "text" && balanceKeywords.includes(lowerMsg)) {
+        const { data: balanceAccounts } = await supabase
+          .from("accounts")
+          .select("id, name, balance")
+          .eq("user_id", userId)
+          .eq("is_active", true)
+          .order("name");
+
+        if (!balanceAccounts || balanceAccounts.length === 0) {
+          await replyMessage(replyToken, "ยังไม่มีบัญชีในระบบครับ กรุณาสร้างบัญชีบนแอปก่อนครับ");
+          continue;
+        }
+
+        const totalBalance = balanceAccounts.reduce((sum, acc) => sum + Number(acc.balance), 0);
+        let balanceText = `💳 ยอดเงินในบัญชีทั้งหมด\n\n`;
+        balanceAccounts.forEach((acc) => {
+          const bal = Number(acc.balance);
+          const emoji = bal >= 0 ? "🟢" : "🔴";
+          balanceText += `${emoji} ${acc.name}\n   ฿${bal.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\n\n`;
+        });
+        balanceText += `─────────────────\n💰 รวมทั้งหมด: ฿${totalBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })}`;
+
+        await replyMessage(replyToken, balanceText);
+        continue;
+      }
+
+      // Command G: Category Summary — "สรุปหมวด", "หมวด", "หมวดหมู่"
+      const categoryKeywords = ["สรุปหมวด", "หมวด", "หมวดหมู่", "category", "ค่าใช้จ่ายหมวด"];
+      if (messageType === "text" && categoryKeywords.includes(lowerMsg)) {
+        const thDateG = getThDate();
+        const todayStrG = thDateG.toISOString().split("T")[0];
+        const monthStartStrG = todayStrG.substring(0, 8) + "01";
+        const monthNameG = thDateG.toLocaleString("th-TH", { month: "long" });
+
+        const { data: catTxs } = await supabase
+          .from("transactions")
+          .select("amount, type, categories(name)")
+          .eq("user_id", userId)
+          .eq("type", "expense")
+          .gte("date", monthStartStrG)
+          .lte("date", todayStrG)
+          .is("deleted_at", null);
+
+        if (!catTxs || catTxs.length === 0) {
+          await replyMessage(replyToken, `ยังไม่มีรายจ่ายในเดือน${monthNameG}ครับ`);
+          continue;
+        }
+
+        const catMap: Record<string, number> = {};
+        catTxs.forEach((tx) => {
+          const catName =
+            (Array.isArray(tx.categories) ? tx.categories[0]?.name : (tx.categories as any)?.name) || "ไม่ระบุหมวดหมู่";
+          catMap[catName] = (catMap[catName] || 0) + Number(tx.amount);
+        });
+
+        const sortedCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+        const totalCatExpense = sortedCats.reduce((s, [, v]) => s + v, 0);
+
+        let catText = `📊 สรุปรายจ่ายตามหมวดหมู่\nเดือน${monthNameG}\n\n`;
+        sortedCats.slice(0, 8).forEach(([name, amount], i) => {
+          const pct = totalCatExpense > 0 ? ((amount / totalCatExpense) * 100).toFixed(0) : "0";
+          const barLen = Math.min(Math.round(Number(pct) / 10), 10);
+          const bar = "█".repeat(barLen) + "░".repeat(10 - barLen);
+          catText += `${i + 1}. ${name}\n   ฿${amount.toLocaleString()} (${pct}%)\n   ${bar}\n`;
+        });
+        catText += `\n─────────────────\n💸 รวมรายจ่าย: ฿${totalCatExpense.toLocaleString()}`;
+
+        await replyMessage(replyToken, catText);
+        continue;
+      }
+
+      // Command H: Extended period summary — "สรุปเมื่อวาน", "สรุปสัปดาห์", "สรุปเดือนที่แล้ว"
+      const yesterdayKeys = ["สรุปเมื่อวาน", "เมื่อวาน", "yesterday"];
+      const weekKeys = ["สรุปสัปดาห์", "สัปดาห์นี้", "สัปดาห์", "week", "7วัน"];
+      const lastMonthKeys = ["สรุปเดือนที่แล้ว", "เดือนที่แล้ว", "lastmonth"];
+      const periodKeys = [...yesterdayKeys, ...weekKeys, ...lastMonthKeys];
+      if (messageType === "text" && periodKeys.includes(lowerMsg)) {
+        const thDateH = getThDate();
+        let startStrH = "";
+        let endStrH = "";
+        let periodLabel = "";
+
+        if (yesterdayKeys.includes(lowerMsg)) {
+          const yesterday = new Date(thDateH);
+          yesterday.setDate(yesterday.getDate() - 1);
+          startStrH = yesterday.toISOString().split("T")[0];
+          endStrH = startStrH;
+          periodLabel = `เมื่อวาน (${yesterday.toLocaleDateString("th-TH", { day: "2-digit", month: "long" })})`;
+        } else if (weekKeys.includes(lowerMsg)) {
+          const weekAgo = new Date(thDateH);
+          weekAgo.setDate(weekAgo.getDate() - 6);
+          startStrH = weekAgo.toISOString().split("T")[0];
+          endStrH = thDateH.toISOString().split("T")[0];
+          periodLabel = "7 วันที่ผ่านมา";
+        } else {
+          const lastMonthDate = new Date(thDateH.getFullYear(), thDateH.getMonth() - 1, 1);
+          const lastMonthEnd = new Date(thDateH.getFullYear(), thDateH.getMonth(), 0);
+          startStrH = lastMonthDate.toISOString().split("T")[0];
+          endStrH = lastMonthEnd.toISOString().split("T")[0];
+          periodLabel = `เดือน${lastMonthDate.toLocaleString("th-TH", { month: "long" })}`;
+        }
+
+        const { data: periodTxs } = await supabase
+          .from("transactions")
+          .select("amount, type")
+          .eq("user_id", userId)
+          .gte("date", startStrH)
+          .lte("date", endStrH)
+          .is("deleted_at", null);
+
+        let pIncome = 0;
+        let pExpense = 0;
+        periodTxs?.forEach((t) => {
+          if (t.type === "income") pIncome += Number(t.amount);
+          else if (t.type === "expense") pExpense += Number(t.amount);
+        });
+
+        const pNet = pIncome - pExpense;
+        const netEmoji = pNet >= 0 ? "🟢" : "🔴";
+        await replyMessage(
+          replyToken,
+          `📊 สรุป${periodLabel}\n\n🟢 รายรับ: ฿${pIncome.toLocaleString()}\n🔴 รายจ่าย: ฿${pExpense.toLocaleString()}\n${netEmoji} คงเหลือ: ฿${pNet.toLocaleString()}`
+        );
+        continue;
+      }
+
+      // Command I: Transfer — "โอน 500", "โอน 500 กสิก ออมทรัพย์", "โอน 500 จาก กสิก ไป ออมทรัพย์"
+      const transferMatch = messageType === "text"
+        ? userMessage.match(/^โอน\s+([\d,]+(?:\.\d+)?)(?:\s+(.+))?$/i)
+        : null;
+
+      if (transferMatch) {
+        const transferAmount = parseFloat(transferMatch[1].replace(/,/g, ""));
+        const restText = (transferMatch[2] || "").trim();
+
+        if (isNaN(transferAmount) || transferAmount <= 0) {
+          await replyMessage(replyToken, "กรุณาระบุจำนวนเงินให้ถูกต้องครับ เช่น \"โอน 500\"");
+          continue;
+        }
+
+        const { data: transferAccounts } = await supabase
+          .from("accounts")
+          .select("id, name")
+          .eq("user_id", userId)
+          .eq("is_active", true)
+          .order("name");
+
+        if (!transferAccounts || transferAccounts.length < 2) {
+          await replyMessage(replyToken, "ต้องมีบัญชีอย่างน้อย 2 บัญชีเพื่อโอนเงินได้ครับ กรุณาสร้างบัญชีเพิ่มบนแอปก่อนครับ");
+          continue;
+        }
+
+        // Fuzzy-match FROM and TO from restText
+        let fromAcc: { id: string; name: string } | null = null;
+        let toAcc: { id: string; name: string } | null = null;
+
+        if (restText) {
+          const parts = restText
+            .replace(/จาก|ไปยัง|ไป|->|→/g, "|")
+            .split("|")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+
+          if (parts.length >= 2) {
+            fromAcc = transferAccounts.find(
+              (a) => a.name.toLowerCase().includes(parts[0].toLowerCase()) || parts[0].toLowerCase().includes(a.name.toLowerCase())
+            ) || null;
+            toAcc = transferAccounts.find(
+              (a) => a.name.toLowerCase().includes(parts[1].toLowerCase()) || parts[1].toLowerCase().includes(a.name.toLowerCase())
+            ) || null;
+          }
+        }
+
+        // Both accounts identified → insert directly
+        if (fromAcc && toAcc) {
+          if (fromAcc.id === toAcc.id) {
+            await replyMessage(replyToken, "❌ บัญชีต้นทางและปลายทางห้ามเป็นบัญชีเดียวกันครับ");
+            continue;
+          }
+          const thDateI = getThDate();
+          const todayStrI = thDateI.toISOString().split("T")[0];
+          const { error: insertTransferErr } = await supabase.from("transactions").insert([{
+            user_id: userId, type: "transfer", amount: transferAmount,
+            date: todayStrI, account_id: fromAcc.id, to_account_id: toAcc.id,
+            note: restText || null, source: "line_bot",
+          }]);
+          if (insertTransferErr) {
+            await replyMessage(replyToken, `เกิดข้อผิดพลาดในการโอนเงิน: ${insertTransferErr.message}`);
+            continue;
+          }
+          await replyMessage(
+            replyToken,
+            `✅ บันทึกโอนเงินสำเร็จ!\n\n💸 ยอดโอน: ฿${transferAmount.toLocaleString()}\n📤 จากบัญชี: ${fromAcc.name}\n📥 ไปยังบัญชี: ${toAcc.name}\n\n💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`
+          );
+          continue;
+        }
+
+        // Cannot auto-match both → use 2-step quick reply flow
+        const thDateI = getThDate();
+        const expiresAtI = new Date(thDateI.getTime() + 10 * 60 * 1000).toISOString();
+
+        if (fromAcc) {
+          // FROM known, ask for TO
+          await supabase.from("line_pending_transactions").upsert({
+            line_user_id: lineUserId, user_id: userId, type: "transfer", amount: transferAmount,
+            category_id: null, category_name: "โอนเงิน",
+            note: `TRANSFER_FROM:${fromAcc.id}:${fromAcc.name}`, expires_at: expiresAtI,
+          }, { onConflict: "line_user_id" });
+
+          const toQR = transferAccounts
+            .filter((a) => a.id !== fromAcc!.id)
+            .map((acc) => ({ type: "action", action: { type: "message", label: acc.name.substring(0, 20), text: `เลือกบัญชี: ${acc.name}` } }));
+
+          await replyMessage(replyToken, `📤 บัญชีต้นทาง: ${fromAcc.name}\n💸 จำนวน: ฿${transferAmount.toLocaleString()}\n\nเลือกบัญชีปลายทาง (บัญชีที่รับเงิน):`, toQR);
+          continue;
+        }
+
+        // FROM unknown → ask for FROM first
+        await supabase.from("line_pending_transactions").upsert({
+          line_user_id: lineUserId, user_id: userId, type: "transfer", amount: transferAmount,
+          category_id: null, category_name: "โอนเงิน",
+          note: "TRANSFER_STEP1", expires_at: expiresAtI,
+        }, { onConflict: "line_user_id" });
+
+        const fromQR = transferAccounts.map((acc) => ({
+          type: "action",
+          action: { type: "message", label: acc.name.substring(0, 20), text: `เลือกบัญชี: ${acc.name}` },
+        }));
+
+        await replyMessage(replyToken, `💸 โอนเงิน ฿${transferAmount.toLocaleString()}\n\nเลือกบัญชีต้นทาง (บัญชีที่ถูกหักเงิน):`, fromQR);
+        continue;
+      }
+
       // Command E: Confirm Pending Account Select e.g., "เลือกบัญชี: บัญชีเงินฝากออมทรัพย์"
       const accountMatch = messageType === "text" ? userMessage.match(/^(?:เลือกบัญชี|บันทึกเข้าบัญชี)[:\s]+(.+)$/i) : null;
       if (accountMatch) {
@@ -334,7 +569,73 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // 3. Insert real transaction
+        // 3. Handle TRANSFER special 2-step flow
+        if (pendingTx.type === "transfer") {
+          const pendingNote = pendingTx.note || "";
+
+          if (pendingNote === "TRANSFER_STEP1") {
+            // User selected FROM → update pending and ask for TO
+            const expiresAtNext = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+            await supabase
+              .from("line_pending_transactions")
+              .update({ note: `TRANSFER_FROM:${accountData.id}:${accountData.name}`, expires_at: expiresAtNext })
+              .eq("id", pendingTx.id);
+
+            const { data: remainingAccounts } = await supabase
+              .from("accounts")
+              .select("id, name")
+              .eq("user_id", userId)
+              .eq("is_active", true)
+              .neq("id", accountData.id)
+              .order("name");
+
+            const toQR = remainingAccounts?.map((acc) => ({
+              type: "action",
+              action: { type: "message", label: acc.name.substring(0, 20), text: `เลือกบัญชี: ${acc.name}` },
+            })) || [];
+
+            await replyMessage(
+              replyToken,
+              `📤 บัญชีต้นทาง: ${accountData.name}\n💸 จำนวน: ฿${Number(pendingTx.amount).toLocaleString()}\n\nเลือกบัญชีปลายทาง (บัญชีที่รับเงิน):`,
+              toQR
+            );
+            continue;
+          }
+
+          if (pendingNote.startsWith("TRANSFER_FROM:")) {
+            // User selected TO → insert transfer transaction
+            const noteParts = pendingNote.split(":");
+            const fromAccountId = noteParts[1];
+            const fromAccountName = noteParts.slice(2).join(":");
+
+            if (fromAccountId === accountData.id) {
+              await replyMessage(replyToken, "❌ บัญชีต้นทางและปลายทางห้ามเป็นบัญชีเดียวกันครับ กรุณาเลือกบัญชีอื่น");
+              continue;
+            }
+
+            const thDateTr = getThDate();
+            const todayStrTr = thDateTr.toISOString().split("T")[0];
+            const { error: transferInsertErr } = await supabase.from("transactions").insert([{
+              user_id: userId, type: "transfer", amount: pendingTx.amount,
+              date: todayStrTr, account_id: fromAccountId, to_account_id: accountData.id,
+              note: null, source: "line_bot",
+            }]);
+
+            if (transferInsertErr) {
+              await replyMessage(replyToken, `เกิดข้อผิดพลาดในการโอนเงิน: ${transferInsertErr.message}`);
+              continue;
+            }
+
+            await supabase.from("line_pending_transactions").delete().eq("id", pendingTx.id);
+            await replyMessage(
+              replyToken,
+              `✅ บันทึกโอนเงินสำเร็จ!\n\n💸 ยอดโอน: ฿${Number(pendingTx.amount).toLocaleString()}\n📤 จากบัญชี: ${fromAccountName}\n📥 ไปยังบัญชี: ${accountData.name}\n\n💡 พิมพ์ "ลบ #1" หากต้องการลบรายการนี้`
+            );
+            continue;
+          }
+        }
+
+        // 4. Insert real transaction (income / expense)
         const thDate = getThDate();
         const todayStr = thDate.toISOString().split("T")[0];
 
@@ -359,7 +660,7 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // 4. Delete pending record
+        // 5. Delete pending record
         await supabase
           .from("line_pending_transactions")
           .delete()
@@ -541,7 +842,7 @@ JSON format:
         if (!amountMatch) {
           await replyMessage(
             replyToken,
-            `💡 คำแนะนำการใช้งานแชทบอท:\n\n1. บันทึกรายจ่าย: พิมพ์ชื่อรายการตามด้วยราคา (เช่น 'ค่าข้าว 150')\n2. บันทึกรายรับ: พิมพ์คำว่า 'รายรับ' นำหน้า\n3. ดูสรุป: พิมพ์ 'สรุป'\n4. ดูประวัติล่าสุด: พิมพ์ 'ล่าสุด'\n5. ลบรายการผิด: พิมพ์ 'ลบ #1'`
+            `💡 คำแนะนำการใช้งานแชทบอท:\n\n📝 บันทึกรายการ:\n• รายจ่าย: พิมพ์ชื่อตามด้วยราคา (เช่น 'ค่าข้าว 150')\n• รายรับ: พิมพ์ 'รายรับ' นำหน้า (เช่น 'รายรับ เงินเดือน 30000')\n• โอนเงิน: พิมพ์ 'โอน 500' หรือ 'โอน 500 กสิก ออมทรัพย์'\n\n📊 ดูข้อมูล:\n• 'สรุป' — สรุปวันนี้และเดือนนี้\n• 'สรุปเมื่อวาน' — สรุปเมื่อวาน\n• 'สรุปสัปดาห์' — สรุป 7 วันที่ผ่านมา\n• 'สรุปเดือนที่แล้ว' — สรุปเดือนที่แล้ว\n• 'สรุปหมวด' — รายจ่ายแยกตามหมวดหมู่\n• 'ยอดบัญชี' — ดูยอดเงินทุกบัญชี\n• 'ล่าสุด' — ดูประวัติ 5 รายการล่าสุด\n\n🗑️ จัดการ:\n• 'ลบ #1' — ลบรายการล่าสุดอันดับแรก`
           );
           continue;
         }
