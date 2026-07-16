@@ -21,7 +21,8 @@ export type FieldDef = {
     labelSeparator?: string;
     valueKey: string;
     filter?: Record<string, string | number | boolean>;
-    filterByUserId?: boolean;
+    filterByUserId?: boolean;          // โอนเงิน: ฉัน + แฟน + บัญชีคู่
+    filterByCurrentUserOnly?: boolean; // รายรับ/รายจ่าย: เฉพาะบัญชีส่วนตัวของฉัน
     orderBy?: string;
     orderAscending?: boolean;
   };
@@ -110,16 +111,19 @@ export default function CrudPage({
 
       setOptionsLoading(true);
       try {
-        // ดึง user ปัจจุบัน + partner สำหรับกรอง filterByUserId
+        // ดึง user ปัจจุบัน + partner (ถ้าจำเป็น)
         let currentUserId: string | null = null;
         let partnerUserId: string | null = null;
-        const needsUserFilter = queryFields.some((f) => f.optionsQuery?.filterByUserId);
+        const needsUserFilter = queryFields.some(
+          (f) => f.optionsQuery?.filterByUserId || f.optionsQuery?.filterByCurrentUserOnly
+        );
         if (needsUserFilter) {
           const { data: { user } } = await supabase.auth.getUser();
           currentUserId = user?.id ?? null;
 
-          // ดึง partner user_id จาก couple_members
-          if (currentUserId) {
+          // ดึง partner user_id เฉพาะเมื่อมี filterByUserId (โอนเงิน)
+          const needsPartner = queryFields.some((f) => f.optionsQuery?.filterByUserId);
+          if (currentUserId && needsPartner) {
             const { data: myMember } = await supabase
               .from("couple_members")
               .select("couple_id")
@@ -149,11 +153,16 @@ export default function CrudPage({
               });
             }
 
-            // กรอง: บัญชีของฉัน + บัญชีของคู่รัก + บัญชีคู่ (couple_id IS NOT NULL)
+            // โอนเงิน: บัญชีของฉัน + บัญชีของแฟน + บัญชีคู่
             if (queryDef.filterByUserId && currentUserId) {
               const orParts = [`user_id.eq.${currentUserId}`, `couple_id.not.is.null`];
               if (partnerUserId) orParts.push(`user_id.eq.${partnerUserId}`);
               query = query.or(orParts.join(","));
+            }
+
+            // รายรับ/รายจ่าย: เฉพาะบัญชีส่วนตัวของฉันเท่านั้น
+            if (queryDef.filterByCurrentUserOnly && currentUserId) {
+              query = query.eq("user_id", currentUserId as any);
             }
 
             if (queryDef.orderBy) {

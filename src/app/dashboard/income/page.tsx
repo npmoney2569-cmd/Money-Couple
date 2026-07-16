@@ -28,7 +28,7 @@ export default function IncomePage() {
           type: "select",
           required: true,
           placeholder: "เลือกบัญชี",
-          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, filterByUserId: true, orderBy: "name", orderAscending: true },
+          optionsQuery: { table: "accounts", labelKey: "name", valueKey: "id", filter: { is_active: true }, filterByCurrentUserOnly: true, orderBy: "name", orderAscending: true },
         },
         {
           key: "tag_ids",
